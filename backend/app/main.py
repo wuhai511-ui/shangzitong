@@ -21,8 +21,10 @@ app.add_middleware(
 # Register routers
 from api.auth import router as auth_router
 from api.cards import router as cards_router
+from api.upload import router as upload_router
 app.include_router(auth_router)
 app.include_router(cards_router)
+app.include_router(upload_router)
 
 
 @app.on_event("startup")

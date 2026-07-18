@@ -75,7 +75,7 @@ class TestUploadAPI:
     def client(self):
         from app.main import app
         from app.core.database import engine
-        from app.models.base import Base
+        from models.base import Base
         Base.metadata.create_all(bind=engine)
         from fastapi.testclient import TestClient
         return TestClient(app)
