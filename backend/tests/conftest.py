@@ -8,7 +8,8 @@ import pytest
 from core.database import engine
 from models.base import Base
 from models.user import User  # noqa
-from models.card import Card  # noqa: register card model
+from models.card import Card  # noqa
+from models.datasource import DataSource, Settlement  # noqa
 
 
 @pytest.fixture(scope="session", autouse=True)
