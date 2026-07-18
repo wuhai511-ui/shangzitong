@@ -1,7 +1,7 @@
 """
 Bank risk-control checks for credit card transaction recommendations.
 """
-from datetime import date
+from datetime import date, timedelta
 from decimal import Decimal
 from .models import CardInfo
 
@@ -24,8 +24,8 @@ def risk_check(card: CardInfo, amount: Decimal, trans_date: date) -> bool:
             return False
 
     # Rule 3: Large amount on bill_day + 1 → bank-sensitive
-    current_month_bill = date(trans_date.year, trans_date.month, min(card.bill_day, 28))
-    if trans_date == date(trans_date.year, trans_date.month, min(card.bill_day, 28)) + __import__('datetime').timedelta(days=1):
+    bill_date = date(trans_date.year, trans_date.month, min(card.bill_day, 28))
+    if trans_date == bill_date + timedelta(days=1):
         if amount >= 5000:
             return False
 

@@ -43,14 +43,13 @@ def predict_daily_settlement(
             arrival=_calc_arrival(target_date)
         )
 
-    # Weighted average
+    # Weighted average — weights align with actual data points
     weighted_sum = Decimal("0")
-    total_weight = Decimal("0")
     for i, amt in enumerate(amounts):
-        w = Decimal(str(WEEK_WEIGHTS[i]))
+        w = Decimal(str(WEEK_WEIGHTS[-(len(amounts) - i)]))  # align from end
         weighted_sum += amt * w
-        total_weight += w
 
+    total_weight = Decimal(str(sum(WEEK_WEIGHTS[-len(amounts):])))
     predicted = weighted_sum / total_weight if total_weight > 0 else Decimal("0")
 
     # Confidence: max(0, 1 - std_dev / (mean + epsilon))
