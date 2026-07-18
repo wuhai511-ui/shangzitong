@@ -7,7 +7,8 @@ import pytest
 
 from core.database import engine
 from models.base import Base
-from models.user import User  # noqa: ensure model is registered with Base
+from models.user import User  # noqa
+from models.card import Card  # noqa: register card model
 
 
 @pytest.fixture(scope="session", autouse=True)

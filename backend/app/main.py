@@ -1,4 +1,9 @@
 """FastAPI application entry point."""
+import sys
+import os
+# Ensure the app package is importable
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from core.database import engine
@@ -6,16 +11,18 @@ from models.base import Base
 
 app = FastAPI(title="商资通")
 
-# Register routers
-from api.auth import router as auth_router
-app.include_router(auth_router)
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Register routers
+from api.auth import router as auth_router
+from api.cards import router as cards_router
+app.include_router(auth_router)
+app.include_router(cards_router)
 
 
 @app.on_event("startup")
