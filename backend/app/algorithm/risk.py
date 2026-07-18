@@ -13,8 +13,8 @@ def risk_check(card: CardInfo, amount: Decimal, trans_date: date) -> bool:
     Returns True if the transaction passes all checks.
     Returns False if ANY rule is triggered (card is downgraded, not rejected).
     """
-    # Rule 1: Round integer amount >= 10000 → suspicious
-    if amount >= 10000 and amount % 1 == 0:
+    # Rule 1: Round amount (multiple of 5000 or 10000) >= 10000 → suspicious
+    if amount >= 10000 and (amount % 5000 == 0):
         return False
 
     # Rule 2: Utilization rate > 85%

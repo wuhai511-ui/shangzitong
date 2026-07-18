@@ -56,8 +56,8 @@ def _build_single_recommendation(
         return None
 
     # Risk check
-    if not risk_check(card_info, amount, purchase_date):
-        return None
+    risk_ok = risk_check(card_info, amount, purchase_date)
+    risk_weight = 1.0 if risk_ok else 0.5  # downgrade, not reject
 
     # Calculate swipe cost
     swipe_cost = amount * card_info.swipe_fee_rate
@@ -81,7 +81,7 @@ def _build_single_recommendation(
         "swipe_cost": str(swipe_cost),
         "daily_cost": str(daily_cost),
         "repayment_date": str(repayment_date),
-        "risk_weight": 0.0,
+        "risk_weight": risk_weight,
     }
 
 
