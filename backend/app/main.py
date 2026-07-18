@@ -6,6 +6,10 @@ from models.base import Base
 
 app = FastAPI(title="商资通")
 
+# Register routers
+from api.auth import router as auth_router
+app.include_router(auth_router)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
