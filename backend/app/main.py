@@ -27,6 +27,7 @@ from api.calendar import router as calendar_router
 from api.alerts import router as alerts_router
 from api.recommend import router as recommend_router
 from api.schedule import router as schedule_router
+from api.stoploss import router as stoploss_router
 app.include_router(auth_router)
 app.include_router(cards_router)
 app.include_router(upload_router)
@@ -35,6 +36,7 @@ app.include_router(calendar_router)
 app.include_router(alerts_router)
 app.include_router(recommend_router)
 app.include_router(schedule_router)
+app.include_router(stoploss_router)
 
 
 @app.on_event("startup")
