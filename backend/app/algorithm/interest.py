@@ -47,29 +47,25 @@ def calc_interest_free_days(
     else:
         billing_cycle = BillingCycle.CURRENT
 
-    # 3. Find next bill date
+    # 3. Find the bill date that contains this transaction
     if billing_cycle == BillingCycle.CURRENT:
-        next_bill_year, next_bill_month = _next_month(
-            current_bill.year, current_bill.month
-        )
+        # Transaction on THIS month's bill
+        bill_month_year = current_bill.year
+        bill_month_month = current_bill.month
     else:
-        # Transaction after bill day: skip to bill in next month,
-        # then the bill AFTER that is the "next bill"
-        next_bill_year, next_bill_month = _next_month(
+        # Transaction on NEXT month's bill
+        bill_month_year, bill_month_month = _next_month(
             current_bill.year, current_bill.month
         )
-        next_bill_year, next_bill_month = _next_month(
-            next_bill_year, next_bill_month
-        )
 
-    next_bill = _month_bill_date(next_bill_year, next_bill_month, bill_day)
+    bill_containing = _month_bill_date(bill_month_year, bill_month_month, bill_day)
 
-    # 4. Calculate repayment date using calendar mapping
+    # 4. Calculate repayment date from the containing bill
     if due_day < bill_day:
-        # Cross-month repayment (e.g., bill=28, due=15 → repayment is next month)
-        repay_year, repay_month = _next_month(next_bill.year, next_bill.month)
+        # Cross-month repayment: bill in month M, due in month M+1
+        repay_year, repay_month = _next_month(bill_month_year, bill_month_month)
     else:
-        repay_year, repay_month = next_bill.year, next_bill.month
+        repay_year, repay_month = bill_month_year, bill_month_month
 
     repayment_date = _month_bill_date(repay_year, repay_month, due_day)
 
