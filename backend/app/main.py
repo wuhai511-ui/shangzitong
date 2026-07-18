@@ -37,6 +37,8 @@ app.include_router(alerts_router)
 app.include_router(recommend_router)
 app.include_router(schedule_router)
 app.include_router(stoploss_router)
+from api.report import router as report_router
+app.include_router(report_router)
 
 
 @app.on_event("startup")
