@@ -1,0 +1,19 @@
+[project]
+name = "szt-backend"
+version = "0.1.0"
+description = "商资通 — 商户经营资金规划工具"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "sqlalchemy",
+    "pydantic-settings",
+    "python-jose",
+    "passlib[bcrypt]",
+    "pandas",
+    "openpyxl",
+    "pytest",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
