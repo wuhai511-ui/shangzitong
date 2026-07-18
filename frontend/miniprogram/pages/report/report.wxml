@@ -1,0 +1,26 @@
+<view class="report-page">
+  <view class="score-card">
+    <text class="score-number">{{report.score || '--'}}</text>
+    <text class="score-grade {{report.grade}}">{{report.grade || '加载中'}}</text>
+  </view>
+
+  <view class="dimensions">
+    <view wx:for="{{dimensions}}" wx:key="name" class="dim-item">
+      <text class="dim-name">{{item.name}}</text>
+      <view class="dim-bar">
+        <view class="dim-fill" style="width:{{item.score}}%"></view>
+      </view>
+      <text class="dim-value">{{item.score}}分</text>
+    </view>
+  </view>
+
+  <view class="cards-summary">
+    <text>{{report.card_count}}张信用卡 | 总额度{{report.total_limit}}元 | 平均使用率{{report.avg_utilization}}%</text>
+  </view>
+
+  <view class="suggestions">
+    <view wx:for="{{report.suggestions}}" wx:key="*this" class="sug-item">
+      <text>· {{item}}</text>
+    </view>
+  </view>
+</view>

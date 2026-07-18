@@ -1,0 +1,14 @@
+.report-page { padding: 32rpx; background: #f5f5f5; min-height: 100vh; }
+.score-card { background: linear-gradient(135deg, #1a73e8, #1557b0); border-radius: 24rpx; padding: 48rpx; text-align: center; margin-bottom: 24rpx; color: white; }
+.score-number { font-size: 96rpx; font-weight: bold; display: block; }
+.score-grade { font-size: 32rpx; margin-top: 8rpx; display: block; }
+.dimensions { background: white; border-radius: 16rpx; padding: 24rpx; margin-bottom: 24rpx; }
+.dim-item { display: flex; align-items: center; margin-bottom: 20rpx; }
+.dim-name { width: 180rpx; font-size: 26rpx; }
+.dim-bar { flex: 1; height: 16rpx; background: #eee; border-radius: 8rpx; margin: 0 16rpx; }
+.dim-fill { height: 100%; background: #1a73e8; border-radius: 8rpx; }
+.dim-value { font-size: 24rpx; color: #666; width: 80rpx; text-align: right; }
+.cards-summary { background: white; border-radius: 16rpx; padding: 24rpx; margin-bottom: 24rpx; font-size: 26rpx; color: #666; text-align: center; }
+.suggestions { background: white; border-radius: 16rpx; padding: 24rpx; }
+.sug-item { font-size: 28rpx; padding: 12rpx 0; border-bottom: 1rpx solid #f0f0f0; }
+.sug-item:last-child { border: none; }
