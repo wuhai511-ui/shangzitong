@@ -1,0 +1,10 @@
+<view class="login-page">
+  <view class="logo-area">
+    <text class="app-name">商资通</text>
+    <text class="app-desc">商户经营资金规划工具</text>
+  </view>
+  <button class="login-btn" open-type="getPhoneNumber" bindgetphonenumber="onLogin">
+    微信一键登录
+  </button>
+  <text class="hint">登录即表示同意《用户协议》和《隐私政策》</text>
+</view>

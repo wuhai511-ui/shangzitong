@@ -1,0 +1,21 @@
+<view class="purchase-page">
+  <form bindsubmit="submit">
+    <view class="form-title">进货规划</view>
+    <input class="form-input" name="date" placeholder="进货日期(如2026-07-19)" value="{{today}}"/>
+    <input class="form-input" name="amount" placeholder="进货金额(元)" type="digit"/>
+    <button formType="submit" class="submit-btn">智能推荐用卡</button>
+  </form>
+
+  <view wx:if="{{result}}" class="result-area">
+    <view class="result-title">推荐方案</view>
+    <view wx:for="{{result.recommendations}}" wx:key="card_id" class="rec-card">
+      <text class="bank">{{item.bank_name}}(尾号{{item.card_tail}})</text>
+      <text>建议{{item.optimal_date}}刷卡, 免息{{item.free_days}}天</text>
+      <text>手续费约{{item.swipe_cost}}元 | 风险: {{item.risk_weight >= 1 ? '低' : '中'}}</text>
+    </view>
+    <view wx:if="{{result.multi_card_split.length > 0}}" class="multi">
+      <text>多卡组合:</text>
+      <text wx:for="{{result.multi_card_split}}" wx:key="card_id">{{item.bank_name}} {{item.amount}}元; </text>
+    </view>
+  </view>
+</view>

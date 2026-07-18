@@ -1,0 +1,10 @@
+<view class="upload-page">
+  <button class="choose-btn" bindtap="chooseFile">选择结算文件</button>
+  <text class="hint">支持CSV、Excel格式</text>
+  <view wx:if="{{preview}}" class="preview">
+    <text>识别到 {{preview.total_rows}} 条记录</text>
+    <text>日期列: {{preview.mappings.date_column}}</text>
+    <text>金额列: {{preview.mappings.amount_column}}</text>
+    <button class="confirm-btn" bindtap="confirm" loading="{{importing}}">确认导入</button>
+  </view>
+</view>
