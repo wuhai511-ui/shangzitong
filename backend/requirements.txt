@@ -1,0 +1,21 @@
+# 商资通 Backend Dependencies
+fastapi==0.115.*
+uvicorn[standard]==0.34.*
+sqlalchemy==2.0.*
+alembic==1.14.*
+pymysql==1.1.*
+redis==5.2.*
+celery==5.4.*
+pandas==2.2.*
+openpyxl==3.1.*
+numpy==2.1.*
+pydantic==2.10.*
+python-jose[cryptography]==3.3.*
+passlib[bcrypt]==1.7.*
+httpx==0.28.*
+paramiko==3.5.*
+pdfplumber==0.11.*
+python-multipart==0.0.*
+pytest==8.3.*
+pytest-asyncio==0.24.*
+httpx==0.28.*
