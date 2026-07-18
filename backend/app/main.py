@@ -25,12 +25,14 @@ from api.upload import router as upload_router
 from api.forecast import router as forecast_router
 from api.calendar import router as calendar_router
 from api.alerts import router as alerts_router
+from api.recommend import router as recommend_router
 app.include_router(auth_router)
 app.include_router(cards_router)
 app.include_router(upload_router)
 app.include_router(forecast_router)
 app.include_router(calendar_router)
 app.include_router(alerts_router)
+app.include_router(recommend_router)
 
 
 @app.on_event("startup")
