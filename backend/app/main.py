@@ -23,10 +23,12 @@ from api.auth import router as auth_router
 from api.cards import router as cards_router
 from api.upload import router as upload_router
 from api.forecast import router as forecast_router
+from api.calendar import router as calendar_router
 app.include_router(auth_router)
 app.include_router(cards_router)
 app.include_router(upload_router)
 app.include_router(forecast_router)
+app.include_router(calendar_router)
 
 
 @app.on_event("startup")

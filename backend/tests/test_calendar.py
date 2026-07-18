@@ -69,7 +69,7 @@ class TestCalendarAPI:
 
     def test_calendar_shows_repayments(self, client, auth_headers):
         """Calendar should include credit card repayment info."""
-        self._seed_card(client, auth_headers, bank_name="招商银行", bill_day=5, due_day=25)
+        self._seed_card(client, auth_headers, bank_name="招商银行", bill_day=20, due_day=25)
         self._seed_settlements(client, auth_headers)
         resp = client.get("/api/v1/calendar", headers=auth_headers)
         assert resp.status_code == 200
