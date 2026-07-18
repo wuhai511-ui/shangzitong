@@ -1,0 +1,13 @@
+<view class="add-page">
+  <form bindsubmit="submit">
+    <picker bindchange="onBankSelect" value="{{bankIndex}}" range="{{banks}}">
+      <view class="form-item">发卡行: {{banks[bankIndex||0]}}</view>
+    </picker>
+    <input class="form-input" name="card_tail" placeholder="卡号后四位(选填)" maxlength="4"/>
+    <input class="form-input" name="credit_limit" placeholder="信用额度(元)" type="digit"/>
+    <input class="form-input" name="used_limit" placeholder="已用额度(元,默认0)" type="digit"/>
+    <input class="form-input" name="bill_day" placeholder="账单日(1-28)" type="number" max="28" min="1"/>
+    <input class="form-input" name="due_day" placeholder="还款日(1-31)" type="number" max="31" min="1"/>
+    <button formType="submit" class="submit-btn">保存</button>
+  </form>
+</view>

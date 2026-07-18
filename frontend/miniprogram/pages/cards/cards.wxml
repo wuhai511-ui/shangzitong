@@ -1,0 +1,21 @@
+<view class="cards-page">
+  <block wx:for="{{cards}}" wx:key="id">
+    <view class="card-item">
+      <view class="card-header">
+        <text class="bank-name">{{item.bank_name}}</text>
+        <text class="card-tail">尾号{{item.card_tail}}</text>
+      </view>
+      <view class="card-info">
+        <text>额度: {{item.credit_limit}} | 已用: {{item.used_limit}} | 可用: {{item.avail_limit}}</text>
+      </view>
+      <view class="card-dates">
+        <text>账单日: {{item.bill_day}}号 | 还款日: {{item.due_day}}号</text>
+      </view>
+      <view class="card-action">
+        <text class="delete-btn" bindtap="deleteCard" data-id="{{item.id}}">删除</text>
+      </view>
+    </view>
+  </block>
+  <view class="empty" wx:if="{{cards.length === 0}}">暂无信用卡，点击下方添加</view>
+  <button class="add-btn" bindtap="addCard">添加信用卡</button>
+</view>

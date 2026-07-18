@@ -1,0 +1,25 @@
+{
+  "pages": [
+    "pages/calendar/calendar",
+    "pages/cards/cards",
+    "pages/cards/add/add",
+    "pages/upload/upload",
+    "pages/me/me"
+  ],
+  "window": {
+    "navigationBarTitleText": "商资通",
+    "navigationBarBackgroundColor": "#1a73e8",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#f5f5f5"
+  },
+  "tabBar": {
+    "color": "#999",
+    "selectedColor": "#1a73e8",
+    "list": [
+      { "pagePath": "pages/calendar/calendar", "text": "资金日历", "iconPath": "icons/calendar.png", "selectedIconPath": "icons/calendar-active.png" },
+      { "pagePath": "pages/cards/cards", "text": "信用卡", "iconPath": "icons/card.png", "selectedIconPath": "icons/card-active.png" },
+      { "pagePath": "pages/upload/upload", "text": "导入", "iconPath": "icons/upload.png", "selectedIconPath": "icons/upload-active.png" },
+      { "pagePath": "pages/me/me", "text": "我的", "iconPath": "icons/me.png", "selectedIconPath": "icons/me-active.png" }
+    ]
+  }
+}

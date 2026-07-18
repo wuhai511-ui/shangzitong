@@ -1,0 +1,31 @@
+<view class="calendar-page">
+  <view class="summary-bar">
+    <view class="summary-item">
+      <text class="label">本月预计回款</text>
+      <text class="value green">¥{{totalInflow}}</text>
+    </view>
+    <view class="summary-item">
+      <text class="label">本月应还</text>
+      <text class="value red">¥{{totalOutflow}}</text>
+    </view>
+    <view class="summary-item">
+      <text class="label">资金池余额</text>
+      <text class="value {{cashPool >= 0 ? 'green' : 'red'}}">¥{{cashPool}}</text>
+    </view>
+  </view>
+
+  <scroll-view scroll-x class="calendar-scroll">
+    <view wx:for="{{calendar}}" wx:key="date" class="day-card {{item.hasAlert ? 'alert' : ''}}">
+      <text class="day-date">{{item.dateStr}}</text>
+      <view class="day-events">
+        <text wx:if="{{item.settlement}}" class="event settlement">+{{item.settlement}}</text>
+        <text wx:for="{{item.repayments}}" wx:key="card_id" class="event repayment">-{{item.amount}}({{item.bank}})</text>
+      </view>
+      <text wx:if="{{item.hasAlert}}" class="alert-tag">!</text>
+    </view>
+  </scroll-view>
+
+  <view class="chart-area">
+    <canvas canvas-id="poolChart" class="pool-chart"></canvas>
+  </view>
+</view>
