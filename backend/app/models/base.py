@@ -4,7 +4,7 @@ SQLAlchemy base model with soft-delete support.
 All business tables inherit from BaseModel.
 """
 from datetime import datetime
-from sqlalchemy import Column, BigInteger, DateTime, func
+from sqlalchemy import Column, Integer, BigInteger, DateTime, func
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import DeclarativeBase
 
@@ -17,7 +17,7 @@ class BaseModel(Base):
     """Abstract base with id, timestamps, and soft-delete."""
     __abstract__ = True
 
-    id = Column(BigInteger, primary_key=True, autoincrement=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now(), nullable=False)
     deleted_at = Column(DateTime, nullable=True, default=None)
