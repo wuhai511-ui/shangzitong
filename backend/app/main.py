@@ -16,6 +16,7 @@ import models.datasource   # noqa: F401
 import models.sftp_config  # noqa: F401
 import models.email_config # noqa: F401
 import models.bank         # noqa: F401
+import models.merchant_profile  # noqa: F401
 
 from core.bootstrap import initialize_database
 from core.config import settings
@@ -48,6 +49,7 @@ from api.schedule import router as schedule_router
 from api.stoploss import router as stoploss_router
 from api.report import router as report_router
 from api.banks import router as banks_router
+from api.profile import router as profile_router
 
 if settings.ENABLE_SFTP_INGEST:
     from api.sftp import router as sftp_router
@@ -69,6 +71,7 @@ if settings.ENABLE_EMAIL_INGEST:
     app.include_router(email_ingest_router)
 app.include_router(report_router)
 app.include_router(banks_router)
+app.include_router(profile_router)
 
 
 @app.get("/health")

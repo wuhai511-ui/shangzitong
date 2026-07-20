@@ -14,6 +14,7 @@ from models.base import Base
 from models.user import User  # noqa
 from models.card import Card  # noqa
 from models.datasource import DataSource, Settlement  # noqa
+from models.merchant_profile import MerchantProfile  # noqa
 
 
 @pytest.fixture(scope="session", autouse=True)
