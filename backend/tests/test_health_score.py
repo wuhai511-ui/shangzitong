@@ -51,3 +51,21 @@ class TestHealthScore:
             "card_utilization": 1.0,
         })
         assert result["score"] < 40
+
+    def test_missing_repayment_data_normalizes_included_weights(self):
+        """Unavailable repayment history should not improve or reduce the score."""
+        from algorithm.health import calculate_health_score
+
+        result = calculate_health_score({
+            "free_days_utilization": 0.5,
+            "overdue_count": None,
+            "gap_frequency": 0.2,
+            "card_utilization": 0.4,
+        })
+
+        assert result["score"] == 60.0
+        assert result["dimensions"] == {
+            "免息期利用率": 50.0,
+            "资金稳定性": 80.0,
+            "额度健康度": 60.0,
+        }

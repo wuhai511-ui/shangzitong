@@ -65,6 +65,7 @@ class TestAlertsAPI:
             assert "bank_name" in r
             assert "due_date" in r
             assert "amount" in r
+            assert "funding_gap" in r
             assert "gap_warning" in r
 
     def test_alerts_returns_gaps(self, client, auth_headers):
@@ -84,3 +85,65 @@ class TestAlertsAPI:
         """Unauthenticated requests should return 401."""
         resp = client.get("/api/v1/alerts/upcoming")
         assert resp.status_code == 401
+
+    def test_calendar_schedule_and_alerts_share_canonical_gap(self, client):
+        """All cashflow consumers should expose the ledger's post-transaction gap."""
+        login = client.post(
+            "/api/v1/auth/login",
+            json={"code": "cross-endpoint-canonical-gap"},
+        )
+        headers = {
+            "Authorization": f"Bearer {login.json()['access_token']}"
+        }
+        due_date = date.today() + timedelta(days=5)
+
+        profile = client.put(
+            "/api/v1/profile/cash",
+            json={"available_cash": "100.00"},
+            headers=headers,
+        )
+        assert profile.status_code == 200
+        card = client.post(
+            "/api/v1/cards",
+            json={
+                "bank_name": "Canonical Gap Bank",
+                "credit_limit": "1000.00",
+                "used_limit": "200.00",
+                "bill_day": 1,
+                "due_day": due_date.day,
+            },
+            headers=headers,
+        )
+        assert card.status_code == 200
+
+        calendar = client.get(
+            "/api/v1/calendar", headers=headers
+        ).json()["days"]
+        schedule = client.get(
+            "/api/v1/schedule", headers=headers
+        ).json()["days"]
+
+        assert [day["funding_gap"] for day in calendar] == [
+            day["funding_gap"] for day in schedule
+        ]
+        gap_day = next(
+            day
+            for day in calendar
+            if day["date"] == str(due_date)
+        )
+        assert Decimal(gap_day["funding_gap"]) == Decimal("100.00")
+
+        upcoming = client.get(
+            "/api/v1/alerts/upcoming", headers=headers
+        ).json()
+        matching = [
+            repayment
+            for repayment in upcoming["repayments"]
+            if repayment["due_date"] == gap_day["date"]
+        ]
+        assert matching
+        assert all(
+            Decimal(repayment["funding_gap"])
+            == Decimal(gap_day["funding_gap"])
+            for repayment in matching
+        )

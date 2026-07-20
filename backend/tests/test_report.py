@@ -3,6 +3,8 @@
 import pytest
 import sys
 import os
+from datetime import date, timedelta
+from decimal import Decimal
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'app'))
 
 
@@ -61,3 +63,48 @@ class TestReportAPI:
         """Unauthenticated requests should return 401."""
         resp = client.get("/api/v1/report/monthly")
         assert resp.status_code == 401
+
+    def test_report_uses_ledger_gaps_and_marks_repayment_history_unavailable(
+        self, client
+    ):
+        """Cash stability comes from ledger gap days, without punctuality claims."""
+        login = client.post(
+            "/api/v1/auth/login",
+            json={"code": "report-canonical-gap-frequency"},
+        )
+        headers = {
+            "Authorization": f"Bearer {login.json()['access_token']}"
+        }
+        due_date = date.today() + timedelta(days=5)
+        card = client.post(
+            "/api/v1/cards",
+            json={
+                "bank_name": "Report Gap Bank",
+                "credit_limit": "1000.00",
+                "used_limit": "200.00",
+                "bill_day": 1,
+                "due_day": due_date.day,
+            },
+            headers=headers,
+        )
+        assert card.status_code == 200
+
+        ledger = client.get(
+            "/api/v1/cashflow?days=30", headers=headers
+        ).json()["days"]
+        gap_frequency = sum(
+            Decimal(day["funding_gap"]) > 0 for day in ledger
+        ) / len(ledger)
+
+        response = client.get(
+            "/api/v1/report/monthly", headers=headers
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["dimensions"]["资金稳定性"] == round(
+            (1.0 - gap_frequency) * 100,
+            1,
+        )
+        assert data["repayment_data_status"] == "unavailable"
+        assert "还款准时率" not in data["dimensions"]
+        assert all("还款准时率" not in item for item in data["suggestions"])

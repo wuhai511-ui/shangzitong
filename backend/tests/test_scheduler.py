@@ -62,6 +62,7 @@ class TestSchedulerAPI:
         for day in data["days"]:
             assert "date" in day
             assert "cash_pool" in day
+            assert "funding_gap" in day
             assert "settlements" in day
             assert "repayments" in day
             assert "alerts" in day
