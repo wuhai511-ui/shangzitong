@@ -36,3 +36,4 @@ miniprogram_npm/
 
 # Local design previews
 .superpowers/
+.worktrees/
