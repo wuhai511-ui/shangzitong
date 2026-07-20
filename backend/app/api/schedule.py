@@ -11,6 +11,7 @@ from api.auth import get_current_user_dependency
 from models.card import Card
 from models.datasource import Settlement
 from algorithm.settlement import build_forecast
+from services.cashflow_service import aggregate_settlement_history
 from algorithm.interest import next_repayment_date
 from algorithm.models import CardInfo
 from datetime import date, timedelta
@@ -91,7 +92,7 @@ def get_schedule(current_user: UserInfo = Depends(get_current_user_dependency),
         Settlement.settle_date >= cutoff,
         Settlement.deleted_at.is_(None),
     ).all()
-    history = {r.settle_date: r.amount for r in rows}
+    history = aggregate_settlement_history(rows)
 
     # Build settlement forecast
     forecasts = build_forecast(today, history, days=days)
