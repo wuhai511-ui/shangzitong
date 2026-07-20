@@ -5,8 +5,8 @@ from schemas.auth import UserInfo
 from api.auth import get_current_user_dependency
 from algorithm.settlement import build_forecast
 from models.datasource import Settlement
+from services.cashflow_service import aggregate_settlement_history
 from datetime import date, timedelta
-from decimal import Decimal
 
 router = APIRouter(prefix="/api/v1/settlements", tags=["settlements"])
 
@@ -31,7 +31,7 @@ def get_forecast(current_user: UserInfo = Depends(get_current_user_dependency),
         Settlement.deleted_at.is_(None)
     ).all()
 
-    history = {r.settle_date: r.amount for r in rows}
+    history = aggregate_settlement_history(rows)
 
     # Build forecast
     forecasts = build_forecast(date.today(), history, days=30)
