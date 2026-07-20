@@ -33,6 +33,24 @@ def authenticate_or_create_user(db: Session, code: str) -> dict:
     }
 
 
+def authenticate_or_create_h5_user(db: Session, username: str) -> dict:
+    """Find or create the H5 user represented by a trusted proxy identity."""
+    openid = f"h5:{username}"
+    user = db.query(User).filter(User.openid == openid).first()
+    if not user:
+        user = User(openid=openid, nickname=f"H5_{username[-61:]}", phone="")
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+    token = create_access_token(data={"user_id": user.id})
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "user": {"id": user.id, "openid": user.openid, "nickname": user.nickname},
+    }
+
+
 def _wechat_code_to_openid(code: str) -> str:
     """Call WeChat API to exchange code for openid."""
     import httpx

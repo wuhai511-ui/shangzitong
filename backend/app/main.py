@@ -20,6 +20,7 @@ import models.merchant_profile  # noqa: F401
 
 from core.bootstrap import initialize_database
 from core.config import settings
+from core.csrf import CSRFMiddleware
 
 
 @asynccontextmanager
@@ -30,6 +31,7 @@ async def lifespan(_: FastAPI):
 
 app = FastAPI(title="商资通", lifespan=lifespan)
 
+app.add_middleware(CSRFMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.H5_ALLOWED_ORIGINS.split(","),

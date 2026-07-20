@@ -5,6 +5,24 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'app'))
 
 import time
 import pytest
+from fastapi.testclient import TestClient
+from core.config import settings
+
+
+@pytest.fixture
+def client():
+    from app.main import app
+
+    return TestClient(app)
+
+
+def create_cookie_session(client, username="csrf-user"):
+    response = client.post(
+        "/api/v1/auth/session",
+        headers={settings.H5_TRUSTED_HEADER: username},
+    )
+    assert response.status_code == 200
+    return response.cookies["szt_csrf"]
 
 
 class TestJWT:
@@ -42,3 +60,56 @@ class TestJWT:
 
         with pytest.raises(Exception):
             verify_token("")
+
+
+class TestCSRFProtection:
+    def test_cookie_mutation_requires_csrf_header(self, client):
+        create_cookie_session(client)
+
+        response = client.put(
+            "/api/v1/profile/cash",
+            json={"available_cash": "1.00"},
+        )
+
+        assert response.status_code == 403
+        assert response.json() == {"detail": "CSRF validation failed"}
+
+    def test_cookie_mutation_rejects_mismatched_csrf_header(self, client):
+        create_cookie_session(client)
+
+        response = client.put(
+            "/api/v1/profile/cash",
+            json={"available_cash": "1.00"},
+            headers={"X-CSRF-Token": "not-the-cookie-token"},
+        )
+
+        assert response.status_code == 403
+        assert response.json() == {"detail": "CSRF validation failed"}
+
+    def test_cookie_mutation_accepts_matching_csrf_header(self, client):
+        csrf_token = create_cookie_session(client)
+
+        response = client.put(
+            "/api/v1/profile/cash",
+            json={"available_cash": "1.00"},
+            headers={"X-CSRF-Token": csrf_token},
+        )
+
+        assert response.status_code == 200
+
+    def test_bearer_mutation_remains_compatible_with_stale_cookie(self, client):
+        login = client.post(
+            "/api/v1/auth/login",
+            json={"code": "csrf-bearer-user"},
+        )
+        client.cookies.set(settings.H5_COOKIE_NAME, "stale-session")
+
+        response = client.put(
+            "/api/v1/profile/cash",
+            json={"available_cash": "1.00"},
+            headers={
+                "Authorization": f"Bearer {login.json()['access_token']}",
+            },
+        )
+
+        assert response.status_code == 200
