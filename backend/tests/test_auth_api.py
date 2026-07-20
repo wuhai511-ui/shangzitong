@@ -165,3 +165,19 @@ class TestAuthAPI:
 
         assert response.status_code == 200
         assert response.json()["openid"] == "h5:fresh-session"
+
+    def test_session_response_hides_token_and_replaces_stale_cookies(self, client):
+        client.cookies.set(settings.H5_COOKIE_NAME, "stale-session")
+        client.cookies.set("szt_csrf", "stale-csrf")
+
+        response = client.post(
+            "/api/v1/auth/session",
+            headers={"X-Authenticated-User": "rotated-session"},
+        )
+
+        assert response.status_code == 200
+        assert "access_token" not in response.json()
+        assert response.cookies[settings.H5_COOKIE_NAME]
+        assert response.cookies["szt_csrf"]
+        assert response.cookies[settings.H5_COOKIE_NAME] != "stale-session"
+        assert response.cookies["szt_csrf"] != "stale-csrf"

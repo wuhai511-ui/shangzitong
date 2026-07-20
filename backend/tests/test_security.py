@@ -113,3 +113,43 @@ class TestCSRFProtection:
         )
 
         assert response.status_code == 200
+
+    def test_invalid_bearer_with_valid_cookie_fails_closed_without_mutation(self, client):
+        csrf_token = create_cookie_session(client, "fail-closed-bearer-cookie")
+
+        baseline = client.put(
+            "/api/v1/profile/cash",
+            json={"available_cash": "5.00"},
+            headers={"X-CSRF-Token": csrf_token},
+        )
+        assert baseline.status_code == 200
+        assert baseline.json()["available_cash"] == "5.00"
+
+        response = client.put(
+            "/api/v1/profile/cash",
+            json={"available_cash": "99.00"},
+            headers={"Authorization": "Bearer invalid-token"},
+        )
+
+        assert response.status_code == 401
+        assert response.json() == {"detail": "Invalid or expired token"}
+
+        after = client.get("/api/v1/profile/cash")
+        assert after.status_code == 200
+        assert after.json()["available_cash"] == "5.00"
+
+    @pytest.mark.parametrize(
+        ("method", "path"),
+        [
+            ("post", "/api/v1/auth/session/"),
+            ("put", "/api/v1/auth/session"),
+        ],
+    )
+    def test_session_bootstrap_exemption_is_exact_method_and_path(
+        self, client, method, path
+    ):
+        client.cookies.set(settings.H5_COOKIE_NAME, "stale-session")
+
+        response = getattr(client, method)(path, follow_redirects=False)
+        assert response.status_code == 403
+        assert response.json() == {"detail": "CSRF validation failed"}
