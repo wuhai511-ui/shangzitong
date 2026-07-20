@@ -85,3 +85,4 @@ def test_upload_security_defaults():
 
     assert settings.MAX_UPLOAD_BYTES == 10 * 1024 * 1024
     assert settings.UPLOAD_PREVIEW_TTL_SECONDS == 900
+    assert settings.H5_COOKIE_NAME == "szt_session"
