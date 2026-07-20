@@ -8,7 +8,7 @@ from schemas.auth import LoginRequest, LoginResponse, UserInfo
 from services.auth_service import authenticate_or_create_user, get_current_user
 
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
-security = HTTPBearer()
+security = HTTPBearer(auto_error=False)
 
 
 def get_db():
@@ -21,10 +21,15 @@ def get_db():
 
 
 def get_current_user_dependency(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    credentials: HTTPAuthorizationCredentials | None = Depends(security),
     db: Session = Depends(get_db),
 ) -> UserInfo:
     """FastAPI dependency: extract and validate JWT, return user."""
+    if credentials is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+        )
     try:
         payload = verify_token(credentials.credentials)
     except Exception:

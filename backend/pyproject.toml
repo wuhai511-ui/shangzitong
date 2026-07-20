@@ -8,6 +8,7 @@ dependencies = [
     "uvicorn",
     "sqlalchemy",
     "pydantic-settings",
+    "PyJWT",
     "python-jose",
     "passlib[bcrypt]",
     "pandas",
