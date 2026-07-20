@@ -68,3 +68,20 @@ class TestApp:
         response = client.get("/health")
         assert response.status_code == 200
         assert response.json() == {"status": "ok"}
+
+    def test_ingest_routes_are_disabled_by_default(self):
+        """Email and SFTP ingestion routes should be opt-in."""
+        from fastapi.testclient import TestClient
+        from app.main import app
+
+        with TestClient(app) as client:
+            assert client.get("/api/v1/ingest/email/status").status_code == 404
+            assert client.get("/api/v1/ingest/sftp/status").status_code == 404
+
+
+def test_upload_security_defaults():
+    """Upload and H5 security defaults should be safe by default."""
+    from app.core.config import settings
+
+    assert settings.MAX_UPLOAD_BYTES == 10 * 1024 * 1024
+    assert settings.UPLOAD_PREVIEW_TTL_SECONDS == 900

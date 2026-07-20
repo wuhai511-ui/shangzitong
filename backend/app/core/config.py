@@ -12,6 +12,13 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "sqlite:///./szt.db"
     WECHAT_APPID: str = ""
     WECHAT_SECRET: str = ""
+    ENABLE_EMAIL_INGEST: bool = False
+    ENABLE_SFTP_INGEST: bool = False
+    MAX_UPLOAD_BYTES: int = 10 * 1024 * 1024
+    UPLOAD_PREVIEW_TTL_SECONDS: int = 900
+    H5_COOKIE_NAME: str = "szt_session"
+    H5_TRUSTED_HEADER: str = "X-Authenticated-User"
+    H5_ALLOWED_ORIGINS: str = "https://47.253.226.91"
 
     def validate_production(self):
         if self.ENV == "prod":
