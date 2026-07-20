@@ -59,6 +59,31 @@ class TestReportAPI:
         assert isinstance(data["score"], (int, float))
         assert 0 <= data["score"] <= 100
 
+    def test_report_serializes_total_limit_as_exact_money(self, client):
+        """Total credit limit should remain exact two-decimal money."""
+        login = client.post(
+            "/api/v1/auth/login",
+            json={"code": "report-exact-total-limit"},
+        )
+        headers = {
+            "Authorization": f"Bearer {login.json()['access_token']}"
+        }
+        self._seed_card(
+            client,
+            headers,
+            bank_name="Exact Money Bank",
+            credit_limit="1000.00",
+            used_limit="0.00",
+        )
+
+        response = client.get(
+            "/api/v1/report/monthly",
+            headers=headers,
+        )
+
+        assert response.status_code == 200
+        assert response.json()["total_limit"] == "1000.00"
+
     def test_report_unauthorized(self, client):
         """Unauthenticated requests should return 401."""
         resp = client.get("/api/v1/report/monthly")

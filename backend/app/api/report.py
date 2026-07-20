@@ -11,6 +11,7 @@ from api.auth import get_current_user_dependency
 from core.database import SessionLocal
 from models.card import Card
 from schemas.auth import UserInfo
+from schemas.cashflow import serialize_money
 from services.cashflow_service import build_cashflow
 
 router = APIRouter(prefix="/api/v1", tags=["report"])
@@ -75,7 +76,7 @@ def _compute_metrics(db: Session, user_id: int) -> dict:
         "gap_frequency": gap_frequency,
         "card_utilization": card_utilization,
         "card_count": card_count,
-        "total_limit": float(total_limit),
+        "total_limit": total_limit,
         "avg_utilization": round(card_utilization * 100, 1),
     }
 
@@ -131,7 +132,7 @@ def get_monthly_report(
         "grade": health_result["grade"],
         "dimensions": health_result["dimensions"],
         "card_count": metrics["card_count"],
-        "total_limit": metrics["total_limit"],
+        "total_limit": serialize_money(metrics["total_limit"]),
         "avg_utilization": metrics["avg_utilization"],
         "suggestions": suggestions,
         "repayment_data_status": "unavailable",

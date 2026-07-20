@@ -86,6 +86,92 @@ class TestAlertsAPI:
         resp = client.get("/api/v1/alerts/upcoming")
         assert resp.status_code == 401
 
+    def test_same_day_repayments_share_daily_canonical_gap(self, client):
+        """Every repayment on a due date should expose the one daily ledger gap."""
+        login = client.post(
+            "/api/v1/auth/login",
+            json={"code": "alerts-multiple-same-day-repayments"},
+        )
+        headers = {
+            "Authorization": f"Bearer {login.json()['access_token']}"
+        }
+        due_date = date.today() + timedelta(days=3)
+        profile = client.put(
+            "/api/v1/profile/cash",
+            json={"available_cash": "100.00"},
+            headers=headers,
+        )
+        assert profile.status_code == 200
+
+        for bank_name, used_limit in (
+            ("Same Day Bank A", "200.00"),
+            ("Same Day Bank B", "300.00"),
+        ):
+            card = client.post(
+                "/api/v1/cards",
+                json={
+                    "bank_name": bank_name,
+                    "credit_limit": "1000.00",
+                    "used_limit": used_limit,
+                    "bill_day": 1,
+                    "due_day": due_date.day,
+                },
+                headers=headers,
+            )
+            assert card.status_code == 200
+
+        repayments = client.get(
+            "/api/v1/alerts/upcoming",
+            headers=headers,
+        ).json()["repayments"]
+        matching = [
+            repayment
+            for repayment in repayments
+            if repayment["due_date"] == str(due_date)
+        ]
+
+        assert len(matching) == 2
+        assert {
+            repayment["funding_gap"]
+            for repayment in matching
+        } == {"400.00"}
+
+    @pytest.mark.parametrize("offset", [0, 7])
+    def test_upcoming_includes_today_and_day_seven_boundaries(
+        self, client, offset
+    ):
+        """The inclusive upcoming window should contain both boundary dates."""
+        login = client.post(
+            "/api/v1/auth/login",
+            json={"code": f"alerts-inclusive-boundary-{offset}"},
+        )
+        headers = {
+            "Authorization": f"Bearer {login.json()['access_token']}"
+        }
+        due_date = date.today() + timedelta(days=offset)
+        card = client.post(
+            "/api/v1/cards",
+            json={
+                "bank_name": f"Boundary Bank {offset}",
+                "credit_limit": "1000.00",
+                "used_limit": "10.00",
+                "bill_day": 1,
+                "due_day": due_date.day,
+            },
+            headers=headers,
+        )
+        assert card.status_code == 200
+
+        repayments = client.get(
+            "/api/v1/alerts/upcoming",
+            headers=headers,
+        ).json()["repayments"]
+
+        assert any(
+            repayment["due_date"] == str(due_date)
+            for repayment in repayments
+        )
+
     def test_calendar_schedule_and_alerts_share_canonical_gap(self, client):
         """All cashflow consumers should expose the ledger's post-transaction gap."""
         login = client.post(

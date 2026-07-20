@@ -215,6 +215,61 @@ def test_build_cashflow_excludes_on_or_after_start_settlements(monkeypatch):
         db.close()
 
 
+def test_build_cashflow_passes_aggregated_same_day_history_to_forecast(
+    monkeypatch,
+):
+    db = SessionLocal()
+    start_date = date(2026, 7, 10)
+    settlement_day = start_date.replace(day=3)
+    captured = {}
+    try:
+        user = _create_user(db, "cashflow-duplicate-history")
+        source = DataSource(
+            user_id=user.id,
+            source_type="upload",
+            provider="test",
+            label="duplicate-history",
+        )
+        db.add(source)
+        db.commit()
+        db.refresh(source)
+        db.add_all(
+            [
+                Settlement(
+                    source_id=source.id,
+                    user_id=user.id,
+                    settle_date=settlement_day,
+                    amount=Decimal("100.00"),
+                ),
+                Settlement(
+                    source_id=source.id,
+                    user_id=user.id,
+                    settle_date=settlement_day,
+                    amount=Decimal("250.50"),
+                ),
+            ]
+        )
+        db.commit()
+
+        def capture_forecast(today, history, days):
+            captured["history"] = history
+            return []
+
+        monkeypatch.setattr(
+            cashflow_service,
+            "build_forecast",
+            capture_forecast,
+        )
+
+        build_cashflow(db, user.id, start_date, days=1)
+
+        assert captured["history"] == {
+            settlement_day: Decimal("350.50")
+        }
+    finally:
+        db.close()
+
+
 def test_build_cashflow_ignores_soft_deleted_cash_profile():
     db = SessionLocal()
     try:
