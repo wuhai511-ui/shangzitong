@@ -54,7 +54,7 @@ def build_repayment_schedule(
         if getattr(card, "status", 1) != 1 or getattr(card, "deleted_at", None) is not None:
             continue
 
-        repay_date = next_repayment_date(_to_card_info(card), start_date)
+        repay_date = next_repayment_date(_to_card_info(card), start_date - timedelta(days=1))
         if start_date <= repay_date < end_date:
             amount = Decimal(card.used_limit)
             event = RepaymentEvent(
@@ -109,7 +109,10 @@ def build_cashflow(
 ) -> CashflowResponse:
     profile = (
         db.query(MerchantProfile)
-        .filter(MerchantProfile.user_id == user_id)
+        .filter(
+            MerchantProfile.user_id == user_id,
+            MerchantProfile.deleted_at.is_(None),
+        )
         .first()
     )
     opening_cash = (
@@ -124,6 +127,7 @@ def build_cashflow(
         .filter(
             Settlement.user_id == user_id,
             Settlement.settle_date >= cutoff,
+            Settlement.settle_date < start_date,
             Settlement.deleted_at.is_(None),
         )
         .all()
