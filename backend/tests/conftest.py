@@ -5,6 +5,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'app'))
 
 # Set dev JWT secret before any imports
 os.environ['JWT_SECRET'] = 'dev-test-secret-key-for-pytest-only-32bytes!'
+os.environ['DATABASE_URL'] = 'sqlite:///./test_szt.db'
 
 import pytest
 

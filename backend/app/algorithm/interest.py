@@ -75,6 +75,55 @@ def calc_interest_free_days(
     return free_days, repayment_date, billing_cycle
 
 
+def next_repayment_date(card: CardInfo, today: date) -> date:
+    """Return the NEXT repayment date for the card's existing balance.
+
+    Different from calc_interest_free_days which computes repayment for a NEW transaction.
+    This finds the upcoming due_day for the most recent bill cycle's balance.
+    """
+    bill_day = card.bill_day
+    due_day = card.due_day
+
+    # Find the most recent bill date ≤ today
+    current_bill = _month_bill_date(today.year, today.month, bill_day)
+    if today < current_bill:
+        # Haven't reached this month's bill yet, previous bill was last month
+        if current_bill.month == 1:
+            prev_bill = _month_bill_date(current_bill.year - 1, 12, bill_day)
+        else:
+            prev_bill = _month_bill_date(current_bill.year, current_bill.month - 1, bill_day)
+        bill_ref = prev_bill
+    else:
+        bill_ref = current_bill
+
+    # Repayment date for this bill cycle
+    if due_day < bill_day:
+        # Cross-month: repayment is in next month
+        if bill_ref.month == 12:
+            repay = _month_bill_date(bill_ref.year + 1, 1, due_day)
+        else:
+            repay = _month_bill_date(bill_ref.year, bill_ref.month + 1, due_day)
+    else:
+        repay = _month_bill_date(bill_ref.year, bill_ref.month, due_day)
+
+    # If repayment already passed, move to next cycle
+    if repay <= today:
+        if bill_ref.month == 12:
+            next_bill = _month_bill_date(bill_ref.year + 1, 1, bill_day)
+        else:
+            next_bill = _month_bill_date(bill_ref.year, bill_ref.month + 1, bill_day)
+
+        if due_day < bill_day:
+            if next_bill.month == 12:
+                repay = _month_bill_date(next_bill.year + 1, 1, due_day)
+            else:
+                repay = _month_bill_date(next_bill.year, next_bill.month + 1, due_day)
+        else:
+            repay = _month_bill_date(next_bill.year, next_bill.month, due_day)
+
+    return repay
+
+
 def find_optimal_swipe_date(
     card: CardInfo,
     purchase_date: date

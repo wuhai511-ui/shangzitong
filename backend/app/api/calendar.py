@@ -7,7 +7,7 @@ from api.auth import get_current_user_dependency
 from models.card import Card
 from models.datasource import Settlement
 from algorithm.settlement import build_forecast
-from algorithm.interest import calc_interest_free_days
+from algorithm.interest import next_repayment_date
 from algorithm.models import CardInfo
 from datetime import date, timedelta
 from decimal import Decimal
@@ -49,8 +49,8 @@ def _build_repayment_map(cards: list[Card], today: date, days: int) -> dict[date
 
     for card in cards:
         card_info = _to_card_info(card)
-        _, repay_date, _ = calc_interest_free_days(card_info, today)
-        # The repayment_date returned is the next repayment date
+        repay_date = next_repayment_date(card_info, today)
+        # The repayment_date returned is the next repayment date for existing balance
         if today <= repay_date <= end_date:
             # Calculate minimum payment amount
             min_payment = card.used_limit * card.min_payment_ratio

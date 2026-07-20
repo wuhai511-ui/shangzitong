@@ -71,13 +71,14 @@ class UploadIngest:
             s = s.replace(ch, '')
         return float(s)
 
-    def parse_upload(self, file_content, filename, template=None) -> ParseResult:
+    def parse_upload(self, file_content, filename, template=None, encoding='utf-8-sig') -> ParseResult:
         """Parse an uploaded file (CSV or Excel) and return ParseResult.
 
         Args:
             file_content: Raw bytes of the uploaded file.
             filename: Original filename (used to detect type).
             template: Optional template name for column mapping hint.
+            encoding: Text encoding for CSV files (default utf-8-sig).
 
         Returns:
             ParseResult with detected headers, rows, mappings, and errors.
@@ -85,7 +86,7 @@ class UploadIngest:
         errors: list[str] = []
         try:
             if filename.lower().endswith('.csv'):
-                text = file_content.decode('utf-8-sig')
+                text = file_content.decode(encoding)
                 reader = csv.DictReader(io.StringIO(text))
                 headers = reader.fieldnames or []
                 rows = list(reader)
