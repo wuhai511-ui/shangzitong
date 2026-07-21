@@ -424,3 +424,21 @@ a {
   margin-top: 8px;
   opacity: 0.7;
 }
+
+
+.score-card {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.score-value {
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--mint);
+}
+
+.score-grade {
+  font-size: 18px;
+  color: var(--amber);
+}
