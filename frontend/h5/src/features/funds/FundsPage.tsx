@@ -1,5 +1,6 @@
 import { AvailableCashForm } from "./AvailableCashForm";
 import { CardsPanel } from "./CardsPanel";
+import { ManualSettlementPanel } from "./ManualSettlementPanel";
 import { UploadPanel } from "./UploadPanel";
 
 export function FundsPage() {
@@ -8,6 +9,7 @@ export function FundsPage() {
       <h2>资金</h2>
       <AvailableCashForm />
       <CardsPanel />
+      <ManualSettlementPanel />
       <UploadPanel />
 
       <section className="card panel connector-card" aria-disabled="true">

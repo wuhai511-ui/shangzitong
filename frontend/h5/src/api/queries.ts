@@ -14,6 +14,8 @@ import type {
   StopLossResponse,
   UploadConfirmInput,
   UploadConfirmResponse,
+  ManualSettlement,
+  ManualSettlementCreateInput,
   UploadPreview,
   User,
 } from "./types";
@@ -28,6 +30,7 @@ export const queryKeys = {
   alertsUpcoming: ["alertsUpcoming"] as const,
   dailySummary: ["dailySummary"] as const,
   monthlyReport: ["monthlyReport"] as const,
+  manualSettlements: ["manualSettlements"] as const,
 };
 
 export function useSessionQuery() {
@@ -178,5 +181,42 @@ export function useMonthlyReportQuery() {
   return useQuery<MonthlyReport>({
     queryKey: queryKeys.monthlyReport,
     queryFn: () => apiClient<MonthlyReport>("/api/v1/report/monthly"),
+  });
+}
+
+
+export function useManualSettlementsQuery() {
+  return useQuery<ManualSettlement[]>({
+    queryKey: queryKeys.manualSettlements,
+    queryFn: () => apiClient<ManualSettlement[]>("/api/v1/manual-settlement"),
+  });
+}
+
+export function useCreateManualSettlementMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: ManualSettlementCreateInput) =>
+      apiClient<ManualSettlement>("/api/v1/manual-settlement", {
+        method: "POST",
+        body: JSON.stringify(input),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.manualSettlements });
+      queryClient.invalidateQueries({ queryKey: ["cashflow"] });
+    },
+  });
+}
+
+export function useDeleteManualSettlementMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) =>
+      apiClient<void>(`/api/v1/manual-settlement/${id}`, {
+        method: "DELETE",
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.manualSettlements });
+      queryClient.invalidateQueries({ queryKey: ["cashflow"] });
+    },
   });
 }

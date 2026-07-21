@@ -175,3 +175,22 @@ export interface ApiError extends Error {
   requestId: string;
   status: number;
 }
+
+
+export type ManualSettlementPeriodType = "day" | "month";
+
+export interface ManualSettlement {
+  id: number;
+  period_type: ManualSettlementPeriodType;
+  period_date: string;
+  amount: string;
+  note: string | null;
+  created_at: string;
+}
+
+export interface ManualSettlementCreateInput {
+  period_type: ManualSettlementPeriodType;
+  period_date: string;
+  amount: string;
+  note?: string;
+}
