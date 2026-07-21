@@ -442,3 +442,128 @@ a {
   font-size: 18px;
   color: var(--amber);
 }
+
+
+/* Manual settlement entry panel */
+.manual-settlement-panel {
+  margin-bottom: 12px;
+}
+
+.manual-settlement-panel h3 {
+  margin: 0 0 12px;
+  font-size: 18px;
+}
+
+.manual-settlement-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.manual-settlement-form .form-row {
+  display: flex;
+  gap: 16px;
+}
+
+.manual-settlement-form .form-row label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.manual-settlement-form label {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.manual-settlement-form input[type="text"],
+.manual-settlement-form input[type="date"],
+.manual-settlement-form input[type="month"] {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--ink-800);
+  color: var(--text);
+  font-size: 16px;
+}
+
+.manual-settlement-form input:focus-visible {
+  outline: none;
+  border-color: var(--mint);
+}
+
+.manual-settlement-form button {
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--mint);
+  background: var(--mint);
+  color: var(--ink-950);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.manual-settlement-form button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.manual-settlement-list {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.manual-settlement-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+.ms-type {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 8px;
+  background: var(--ink-800);
+  color: var(--mint);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.ms-period {
+  font-size: 14px;
+  color: var(--text);
+}
+
+.ms-amount {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  margin-left: auto;
+}
+
+.ms-note {
+  font-size: 13px;
+  color: var(--muted);
+  flex-basis: 100%;
+}
+
+.ms-delete {
+  background: none;
+  border: none;
+  color: var(--danger);
+  cursor: pointer;
+  padding: 4px 8px;
+  font-size: 13px;
+}
+
+.ms-delete:disabled {
+  opacity: 0.5;
+}

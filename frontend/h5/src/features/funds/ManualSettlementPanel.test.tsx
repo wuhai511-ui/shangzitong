@@ -112,6 +112,6 @@ it("blocks submit with invalid amount", async () => {
   await user.type(screen.getByLabelText("结算日期"), "2026-07-15");
   await user.type(screen.getByLabelText("结算金额"), "-5");
   await user.click(screen.getByRole("button", { name: "保存" }));
-  await waitFor(() => expect(screen.getByText("金额格式错误，最多两位小数")).toBeInTheDocument());
+  await waitFor(() => expect(screen.getByText("金额不能为空且最多两位小数")).toBeInTheDocument());
   expect(api.create).not.toHaveBeenCalled();
 });
