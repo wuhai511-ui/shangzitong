@@ -288,3 +288,259 @@ class TestSecureUploadPreviewAPI:
         assert response.status_code == 400
         assert response.json()["detail"] == "No preview data found"
         assert preview_id not in _preview_store
+
+    def test_preview_reads_only_configured_limit_plus_one(
+        self, client, auth_headers, monkeypatch
+    ):
+        from app.core.config import settings
+        from starlette.datastructures import UploadFile as StarletteUploadFile
+
+        read_sizes = []
+        original_read = StarletteUploadFile.read
+
+        async def read_spy(upload, size=-1):
+            read_sizes.append(size)
+            return await original_read(upload, size)
+
+        monkeypatch.setattr(StarletteUploadFile, "read", read_spy)
+        self.create_preview(client, auth_headers)
+        assert read_sizes == [settings.MAX_UPLOAD_BYTES + 1]
+
+    def test_preview_creation_globally_sweeps_expired_records(
+        self, client, auth_headers, second_auth_headers
+    ):
+        from api.upload import _preview_store
+
+        expired_id = self.create_preview(client, second_auth_headers)["preview_id"]
+        _preview_store[expired_id]["expires_at"] = datetime.now(timezone.utc) - timedelta(seconds=1)
+
+        self.create_preview(client, auth_headers)
+        assert expired_id not in _preview_store
+
+    def test_preview_take_globally_sweeps_expired_records(
+        self, client, auth_headers, second_auth_headers
+    ):
+        from api.upload import _preview_store
+
+        own_id = self.create_preview(client, auth_headers)["preview_id"]
+        expired_id = self.create_preview(client, second_auth_headers)["preview_id"]
+        _preview_store[expired_id]["expires_at"] = datetime.now(timezone.utc) - timedelta(seconds=1)
+
+        assert self.confirm_preview(client, auth_headers, own_id).status_code == 200
+        assert expired_id not in _preview_store
+
+    def test_per_user_preview_limit_rejects_without_evicting(
+        self, client, auth_headers, monkeypatch
+    ):
+        import api.upload as upload_api
+
+        monkeypatch.setattr(upload_api, "MAX_PREVIEWS_PER_USER", 2)
+        first = self.create_preview(client, auth_headers)["preview_id"]
+        second = self.create_preview(client, auth_headers)["preview_id"]
+        before = set(upload_api._preview_store)
+
+        response = client.post(
+            "/api/v1/ingest/upload/preview",
+            files={"file": ("third.csv", io.BytesIO(b"date,amount\n2026-01-15,1"), "text/csv")},
+            headers=auth_headers,
+        )
+        assert response.status_code == 429
+        assert set(upload_api._preview_store) == before == {first, second}
+
+    def test_global_preview_limit_rejects_without_evicting(
+        self, client, auth_headers, second_auth_headers, monkeypatch
+    ):
+        import api.upload as upload_api
+
+        monkeypatch.setattr(upload_api, "MAX_PREVIEWS_TOTAL", 2)
+        monkeypatch.setattr(upload_api, "MAX_PREVIEWS_PER_USER", 2)
+        first = self.create_preview(client, auth_headers)["preview_id"]
+        second = self.create_preview(client, second_auth_headers)["preview_id"]
+        before = set(upload_api._preview_store)
+
+        response = client.post(
+            "/api/v1/ingest/upload/preview",
+            files={"file": ("full.csv", io.BytesIO(b"date,amount\n2026-01-15,1"), "text/csv")},
+            headers=auth_headers,
+        )
+        assert response.status_code == 429
+        assert set(upload_api._preview_store) == before == {first, second}
+
+    def test_normal_xlsx_preview_remains_supported(self, client, auth_headers):
+        import pandas as pd
+
+        workbook = io.BytesIO()
+        pd.DataFrame(
+            {"date": ["2026-01-15"], "amount": ["12.34"]}
+        ).to_excel(workbook, index=False)
+
+        response = client.post(
+            "/api/v1/ingest/upload/preview",
+            files={"file": ("normal.xlsx", io.BytesIO(workbook.getvalue()), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")},
+            headers=auth_headers,
+        )
+        assert response.status_code == 200
+        assert response.json()["total_rows"] == 1
+
+    def test_high_compression_xlsx_zip_is_rejected(
+        self, client, auth_headers, monkeypatch
+    ):
+        import zipfile
+
+        archive = io.BytesIO()
+        with zipfile.ZipFile(archive, "w", compression=zipfile.ZIP_DEFLATED) as workbook:
+            workbook.writestr("[Content_Types].xml", b"A" * (2 * 1024 * 1024))
+
+        from ingest.upload_ingest import UploadIngest
+
+        monkeypatch.setattr(
+            UploadIngest,
+            "parse_upload",
+            lambda *args, **kwargs: pytest.fail("unsafe ZIP reached pandas"),
+        )
+        response = client.post(
+            "/api/v1/ingest/upload/preview",
+            files={"file": ("bomb.xlsx", io.BytesIO(archive.getvalue()), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")},
+            headers=auth_headers,
+        )
+        assert response.status_code == 400
+
+    def test_xlsx_with_unsafe_member_path_is_rejected(
+        self, client, auth_headers, monkeypatch
+    ):
+        import zipfile
+
+        archive = io.BytesIO()
+        with zipfile.ZipFile(archive, "w", compression=zipfile.ZIP_DEFLATED) as workbook:
+            workbook.writestr("../escape.xml", b"unsafe")
+
+        from ingest.upload_ingest import UploadIngest
+
+        monkeypatch.setattr(
+            UploadIngest,
+            "parse_upload",
+            lambda *args, **kwargs: pytest.fail("unsafe ZIP reached pandas"),
+        )
+        response = client.post(
+            "/api/v1/ingest/upload/preview",
+            files={"file": ("unsafe.xlsx", io.BytesIO(archive.getvalue()), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")},
+            headers=auth_headers,
+        )
+        assert response.status_code == 400
+
+    def test_explicit_bogus_id_never_falls_back_to_owned_preview(
+        self, client, auth_headers
+    ):
+        from api.upload import _preview_store
+
+        own_id = self.create_preview(client, auth_headers)["preview_id"]
+        bogus = self.confirm_preview(client, auth_headers, "0" * 32)
+        assert bogus.status_code == 400
+        assert own_id in _preview_store
+        assert self.confirm_preview(client, auth_headers, own_id).status_code == 200
+
+    def test_explicit_foreign_id_never_consumes_owned_preview(
+        self, client, auth_headers, second_auth_headers
+    ):
+        from api.upload import _preview_store
+
+        first_users_id = self.create_preview(client, auth_headers)["preview_id"]
+        second_users_id = self.create_preview(client, second_auth_headers)["preview_id"]
+
+        foreign = self.confirm_preview(client, second_auth_headers, first_users_id)
+        assert foreign.status_code == 404
+        assert first_users_id in _preview_store
+        assert second_users_id in _preview_store
+        assert self.confirm_preview(
+            client, second_auth_headers, second_users_id
+        ).status_code == 200
+
+    def test_xlsx_member_count_limit_is_enforced_before_parsing(
+        self, client, auth_headers, monkeypatch
+    ):
+        import api.upload as upload_api
+        import zipfile
+        from ingest.upload_ingest import UploadIngest
+
+        monkeypatch.setattr(upload_api, "MAX_XLSX_MEMBERS", 1)
+        monkeypatch.setattr(
+            UploadIngest,
+            "parse_upload",
+            lambda *args, **kwargs: pytest.fail("unsafe ZIP reached pandas"),
+        )
+        archive = io.BytesIO()
+        with zipfile.ZipFile(archive, "w") as workbook:
+            workbook.writestr("one.xml", b"1")
+            workbook.writestr("two.xml", b"2")
+
+        response = client.post(
+            "/api/v1/ingest/upload/preview",
+            files={
+                "file": (
+                    "members.xlsx",
+                    io.BytesIO(archive.getvalue()),
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                )
+            },
+            headers=auth_headers,
+        )
+        assert response.status_code == 400
+
+    def test_xlsx_uncompressed_size_limit_is_enforced_before_parsing(
+        self, client, auth_headers, monkeypatch
+    ):
+        import api.upload as upload_api
+        import zipfile
+        from ingest.upload_ingest import UploadIngest
+
+        monkeypatch.setattr(upload_api, "MAX_XLSX_UNCOMPRESSED_BYTES", 10)
+        monkeypatch.setattr(
+            UploadIngest,
+            "parse_upload",
+            lambda *args, **kwargs: pytest.fail("unsafe ZIP reached pandas"),
+        )
+        archive = io.BytesIO()
+        with zipfile.ZipFile(archive, "w", compression=zipfile.ZIP_STORED) as workbook:
+            workbook.writestr("large.xml", b"A" * 11)
+
+        response = client.post(
+            "/api/v1/ingest/upload/preview",
+            files={"file": ("large.xlsx", io.BytesIO(archive.getvalue()), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")},
+            headers=auth_headers,
+        )
+        assert response.status_code == 400
+
+    def test_encrypted_xlsx_member_is_rejected_before_parsing(
+        self, client, auth_headers, monkeypatch
+    ):
+        import zipfile
+        from ingest.upload_ingest import UploadIngest
+
+        archive = io.BytesIO()
+        with zipfile.ZipFile(archive, "w", compression=zipfile.ZIP_STORED) as workbook:
+            workbook.writestr("content.xml", b"safe-size")
+        content = bytearray(archive.getvalue())
+        local_header = content.find(b"PK\x03\x04")
+        central_header = content.find(b"PK\x01\x02")
+        assert local_header >= 0 and central_header >= 0
+        for flag_offset in (local_header + 6, central_header + 8):
+            flags = int.from_bytes(content[flag_offset:flag_offset + 2], "little") | 0x1
+            content[flag_offset:flag_offset + 2] = flags.to_bytes(2, "little")
+
+        monkeypatch.setattr(
+            UploadIngest,
+            "parse_upload",
+            lambda *args, **kwargs: pytest.fail("unsafe ZIP reached pandas"),
+        )
+        response = client.post(
+            "/api/v1/ingest/upload/preview",
+            files={
+                "file": (
+                    "encrypted.xlsx",
+                    io.BytesIO(bytes(content)),
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                )
+            },
+            headers=auth_headers,
+        )
+        assert response.status_code == 400
