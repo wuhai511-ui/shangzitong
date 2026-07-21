@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { usePutCashMutation } from "../../api/queries";
-import { normalizeCashInput } from "../../lib/format";
+import { useCashProfileQuery, usePutCashMutation } from "../../api/queries";
+import { formatYuan, normalizeCashInput } from "../../lib/format";
 
 interface Props {
   initial?: string | null;
@@ -10,6 +10,7 @@ export function AvailableCashForm({ initial }: Props) {
   const [value, setValue] = useState(initial ?? "");
   const [error, setError] = useState<string | null>(null);
   const putCash = usePutCashMutation();
+  const profile = useCashProfileQuery();
 
   function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -38,6 +39,11 @@ export function AvailableCashForm({ initial }: Props) {
       <button type="submit" disabled={putCash.isPending}>
         {putCash.isPending ? "保存中" : "保存并重新计算"}
       </button>
+      {profile.data?.available_cash != null && (
+        <div className="cash-confirmed" data-testid="cash-confirmed">
+          已保存 <span>{formatYuan(profile.data.available_cash)}</span>
+        </div>
+      )}
     </form>
   );
 }
