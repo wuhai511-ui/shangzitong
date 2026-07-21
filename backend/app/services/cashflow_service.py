@@ -11,7 +11,11 @@ from algorithm.settlement import build_forecast
 from models.card import Card
 from models.datasource import Settlement
 from models.merchant_profile import MerchantProfile
+from models.manual_settlement import ManualSettlement
 from schemas.cashflow import CashflowDay, CashflowResponse, RepaymentEvent
+import calendar as _calendar
+from decimal import ROUND_HALF_UP
+from schemas.cashflow import MONEY_QUANTUM
 
 
 ZERO = Decimal("0.00")
@@ -21,6 +25,35 @@ def aggregate_settlement_history(rows: Iterable) -> dict[date, Decimal]:
     totals: defaultdict[date, Decimal] = defaultdict(lambda: ZERO)
     for row in rows:
         totals[row.settle_date] += Decimal(row.amount)
+    return dict(totals)
+
+def expand_manual_settlements(
+    rows: Iterable, cutoff: date, start_date: date
+) -> dict[date, Decimal]:
+    """Expand manual settlement entries (day/month) into a per-day history dict.
+
+    A ``month`` entry with total amount T is split evenly across every day of
+    that month (T / days_in_month). Only days within ``[cutoff, start_date)``
+    are emitted so the result is comparable to the uploaded-statement history.
+    """
+    totals: defaultdict[date, Decimal] = defaultdict(lambda: ZERO)
+    for row in rows:
+        amount = Decimal(row.amount)
+        if row.period_type == "month":
+            year = row.period_date.year
+            month = row.period_date.month
+            days_in_month = _calendar.monthrange(year, month)[1]
+            daily = (amount / days_in_month).quantize(
+                MONEY_QUANTUM, rounding=ROUND_HALF_UP
+            )
+            for day_offset in range(days_in_month):
+                day = date(year, month, day_offset + 1)
+                if cutoff <= day < start_date:
+                    totals[day] += daily
+        else:
+            day = row.period_date
+            if cutoff <= day < start_date:
+                totals[day] += amount
     return dict(totals)
 
 
@@ -122,17 +155,28 @@ def build_cashflow(
     )
 
     cutoff = start_date - timedelta(days=90)
-    settlement_rows = (
-        db.query(Settlement)
+    manual_rows = (
+        db.query(ManualSettlement)
         .filter(
-            Settlement.user_id == user_id,
-            Settlement.settle_date >= cutoff,
-            Settlement.settle_date < start_date,
-            Settlement.deleted_at.is_(None),
+            ManualSettlement.user_id == user_id,
+            ManualSettlement.deleted_at.is_(None),
         )
         .all()
     )
-    history = aggregate_settlement_history(settlement_rows)
+    if manual_rows:
+        history = expand_manual_settlements(manual_rows, cutoff, start_date)
+    else:
+        settlement_rows = (
+            db.query(Settlement)
+            .filter(
+                Settlement.user_id == user_id,
+                Settlement.settle_date >= cutoff,
+                Settlement.settle_date < start_date,
+                Settlement.deleted_at.is_(None),
+            )
+            .all()
+        )
+        history = aggregate_settlement_history(settlement_rows)
     forecasts = build_forecast(
         start_date - timedelta(days=1),
         history,
