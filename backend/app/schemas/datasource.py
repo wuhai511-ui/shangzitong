@@ -5,12 +5,15 @@ from pydantic import BaseModel
 
 
 class UploadPreviewResponse(BaseModel):
+    preview_id: str
     mappings: dict
     preview_rows: list
     total_rows: int
+    expires_at: datetime
 
 
 class UploadConfirmRequest(BaseModel):
+    preview_id: Optional[str] = None
     mappings: dict
     provider: str
 
