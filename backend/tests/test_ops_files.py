@@ -19,3 +19,19 @@ def test_nginx_protects_h5_and_overwrites_identity():
     assert "proxy_set_header X-Authenticated-User $remote_user;" in config
     assert "proxy_pass http://127.0.0.1:8800;" in config
     assert "try_files $uri $uri/ /szt/index.html;" in config
+
+
+def test_deploy_script_has_required_guards():
+    script = (ROOT / "ops/scripts/deploy.sh").read_text(encoding="utf-8")
+    for text in [
+        "set -euo pipefail",
+        "git diff --quiet",
+        "git merge-base --is-ancestor",
+        "sqlite3",
+        "npm ci",
+        "npm run build",
+        "systemctl restart szt-backend",
+        "curl --fail",
+        "rollback.sh",
+    ]:
+        assert text in script
