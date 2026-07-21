@@ -26,6 +26,8 @@ _NO_PREVIEW_DETAIL = "No preview data found"
 MAX_PREVIEWS_PER_USER = 5
 MAX_PREVIEWS_TOTAL = 100
 MAX_XLSX_MEMBERS = 1000
+MAX_PREVIEW_BYTES_PER_USER = 20 * 1024 * 1024
+MAX_PREVIEW_BYTES_TOTAL = 50 * 1024 * 1024
 MAX_XLSX_UNCOMPRESSED_BYTES = 50 * 1024 * 1024
 MAX_XLSX_COMPRESSION_RATIO = 100
 
@@ -136,6 +138,21 @@ def _enforce_preview_capacity(user_id: int) -> None:
         raise HTTPException(status_code=429, detail="Too many active upload previews")
 
 
+def _enforce_preview_byte_budget(user_id: int, content_size: int) -> None:
+    user_bytes = sum(
+        len(stored["file_content"])
+        for stored in _preview_store.values()
+        if stored["user_id"] == user_id
+    )
+    if user_bytes + content_size > MAX_PREVIEW_BYTES_PER_USER:
+        raise HTTPException(status_code=429, detail="Upload preview byte budget exceeded")
+    total_bytes = sum(
+        len(stored["file_content"]) for stored in _preview_store.values()
+    )
+    if total_bytes + content_size > MAX_PREVIEW_BYTES_TOTAL:
+        raise HTTPException(status_code=429, detail="Upload preview byte budget exceeded")
+
+
 def _take_preview(preview_id: str | None, user_id: int) -> dict:
     now = datetime.now(timezone.utc)
     _sweep_expired_previews(now)
@@ -186,7 +203,14 @@ async def upload_preview(
     encoding = _validate_file_content(safe_name, file_content)
     ingest = UploadIngest()
     parse_options = {"encoding": encoding} if encoding else {}
-    result = ingest.parse_upload(file_content, safe_name, **parse_options)
+    result = ingest.parse_upload(
+        file_content,
+        safe_name,
+        max_rows=settings.UPLOAD_MAX_ROWS,
+        max_columns=settings.UPLOAD_MAX_COLUMNS,
+        max_cells=settings.UPLOAD_MAX_CELLS,
+        **parse_options,
+    )
 
     if result.errors:
         raise HTTPException(status_code=400, detail="; ".join(result.errors))
@@ -194,6 +218,7 @@ async def upload_preview(
     now = datetime.now(timezone.utc)
     _sweep_expired_previews(now)
     _enforce_preview_capacity(current_user.id)
+    _enforce_preview_byte_budget(current_user.id, len(file_content))
 
     expires_at = now + timedelta(seconds=settings.UPLOAD_PREVIEW_TTL_SECONDS)
     preview_id = uuid4().hex
@@ -202,8 +227,9 @@ async def upload_preview(
     _preview_store[preview_id] = {
         "user_id": current_user.id,
         "filename": safe_name,
+        "file_content": file_content,
+        "encoding": encoding,
         "headers": result.headers,
-        "rows": result.rows,
         "total_rows": result.total_rows,
         "created_at": now,
         "expires_at": expires_at,
@@ -226,6 +252,21 @@ async def upload_confirm(
 ):
     stored = _take_preview(body.preview_id, current_user.id)
 
+    ingest = UploadIngest()
+    confirm_parse_options = (
+        {"encoding": stored["encoding"]} if stored.get("encoding") else {}
+    )
+    result = ingest.parse_upload(
+        stored["file_content"],
+        stored.get("filename", "upload"),
+        max_rows=settings.UPLOAD_MAX_ROWS,
+        max_columns=settings.UPLOAD_MAX_COLUMNS,
+        max_cells=settings.UPLOAD_MAX_CELLS,
+        **confirm_parse_options,
+    )
+    if result.errors:
+        raise HTTPException(status_code=400, detail="; ".join(result.errors))
+
     ds = DataSource(
         user_id=current_user.id,
         source_type="upload",
@@ -241,7 +282,7 @@ async def upload_confirm(
     date_col = mappings.get("date_column", "date")
     amount_col = mappings.get("amount_column", "amount")
 
-    for row in stored["rows"]:
+    for row in result.rows:
         try:
             settle_date = datetime.strptime(
                 str(row.get(date_col, "")), mappings.get("date_format", "%Y-%m-%d")

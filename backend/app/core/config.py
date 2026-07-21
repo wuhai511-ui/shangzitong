@@ -14,6 +14,9 @@ class Settings(BaseSettings):
     WECHAT_SECRET: str = ""
     ENABLE_EMAIL_INGEST: bool = False
     ENABLE_SFTP_INGEST: bool = False
+    UPLOAD_MAX_ROWS: int = 50_000
+    UPLOAD_MAX_COLUMNS: int = 100
+    UPLOAD_MAX_CELLS: int = 1_000_000
     MAX_UPLOAD_BYTES: int = 10 * 1024 * 1024
     UPLOAD_PREVIEW_TTL_SECONDS: int = 900
     H5_COOKIE_NAME: str = "szt_session"

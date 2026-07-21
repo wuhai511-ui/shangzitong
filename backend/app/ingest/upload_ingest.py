@@ -71,7 +71,16 @@ class UploadIngest:
             s = s.replace(ch, '')
         return float(s)
 
-    def parse_upload(self, file_content, filename, template=None, encoding='utf-8-sig') -> ParseResult:
+    def parse_upload(
+        self,
+        file_content,
+        filename,
+        template=None,
+        encoding='utf-8-sig',
+        max_rows=None,
+        max_columns=None,
+        max_cells=None,
+    ) -> ParseResult:
         """Parse an uploaded file (CSV or Excel) and return ParseResult.
 
         Args:
@@ -79,20 +88,53 @@ class UploadIngest:
             filename: Original filename (used to detect type).
             template: Optional template name for column mapping hint.
             encoding: Text encoding for CSV files (default utf-8-sig).
+            max_rows: Optional maximum data rows; one extra row detects overflow.
+            max_columns: Optional maximum number of columns.
+            max_cells: Optional maximum rows-by-columns cell budget.
 
         Returns:
             ParseResult with detected headers, rows, mappings, and errors.
         """
+        def limit_error(message):
+            return ParseResult(
+                headers=[], rows=[], mappings={}, total_rows=0, errors=[message]
+            )
+
         errors: list[str] = []
         try:
             if filename.lower().endswith('.csv'):
-                text = file_content.decode(encoding)
-                reader = csv.DictReader(io.StringIO(text))
+                text_stream = io.TextIOWrapper(
+                    io.BytesIO(file_content), encoding=encoding, newline=""
+                )
+                reader = csv.DictReader(text_stream)
                 headers = reader.fieldnames or []
-                rows = list(reader)
+                column_count = len(headers)
+                if max_columns is not None and column_count > max_columns:
+                    return limit_error("Upload exceeds column limit")
+
+                rows = []
+                cell_count = 0
+                for row_number, row in enumerate(reader, start=1):
+                    if max_rows is not None and row_number > max_rows:
+                        return limit_error("Upload exceeds row limit")
+                    cell_count += column_count
+                    if max_cells is not None and cell_count > max_cells:
+                        return limit_error("Upload exceeds cell limit")
+                    rows.append(row)
             else:
-                df_excel = pd.read_excel(io.BytesIO(file_content), dtype=str)
+                read_options = {"dtype": str}
+                if max_rows is not None:
+                    read_options["nrows"] = max_rows + 1
+                df_excel = pd.read_excel(io.BytesIO(file_content), **read_options)
                 headers = list(df_excel.columns)
+                column_count = len(headers)
+                row_count = len(df_excel.index)
+                if max_columns is not None and column_count > max_columns:
+                    return limit_error("Upload exceeds column limit")
+                if max_rows is not None and row_count > max_rows:
+                    return limit_error("Upload exceeds row limit")
+                if max_cells is not None and row_count * column_count > max_cells:
+                    return limit_error("Upload exceeds cell limit")
                 rows = df_excel.to_dict('records')
         except Exception as e:
             return ParseResult(
