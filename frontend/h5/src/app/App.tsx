@@ -1,3 +1,15 @@
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { AppShell } from "./AppShell";
+import { routes } from "./routes";
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <AppShell />,
+    children: routes,
+  },
+]);
+
 export function App() {
-  return <h1>商资通</h1>;
+  return <RouterProvider router={router} />;
 }

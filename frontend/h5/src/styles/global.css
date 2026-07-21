@@ -1,0 +1,130 @@
+@import "./tokens.css";
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  background: var(--ink-950);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+    "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app-main {
+  flex: 1;
+  padding: 16px 16px 84px;
+  max-width: 720px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Brand hidden on mobile, shown in sidebar on desktop */
+.app-brand-desktop {
+  display: none;
+}
+
+/* Mobile: fixed bottom navigation */
+.app-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-around;
+  background: var(--ink-900);
+  border-top: 1px solid var(--line);
+  padding: 6px 0 calc(6px + env(safe-area-inset-bottom));
+  z-index: 100;
+}
+
+.nav-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  color: var(--muted);
+  font-size: 12px;
+  border: 2px solid transparent;
+}
+
+.nav-link:focus-visible {
+  outline: none;
+  border-color: var(--mint);
+}
+
+.nav-link[aria-current="page"] {
+  color: var(--mint);
+}
+
+/* Desktop: 232px sidebar from 768px upward */
+@media (min-width: 768px) {
+  .app-shell {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+  .app-brand-desktop {
+    display: flex;
+  }
+  .app-nav {
+    position: sticky;
+    top: 0;
+    flex-direction: column;
+    width: 232px;
+    min-height: 100vh;
+    background: var(--ink-900);
+    border-right: 1px solid var(--line);
+    border-top: none;
+    padding: 16px 12px;
+    gap: 4px;
+    justify-content: flex-start;
+  }
+  .app-main {
+    padding: 24px;
+    max-width: 960px;
+    padding-bottom: 24px;
+  }
+  .nav-link {
+    flex-direction: row;
+    justify-content: flex-start;
+    font-size: 15px;
+    padding: 10px 12px;
+  }
+}
+
+.brand-mark {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 8px 16px;
+  margin: 0;
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--mint);
+}
+
+.card {
+  background: var(--ink-900);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  padding: 16px;
+}

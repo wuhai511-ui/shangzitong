@@ -1,0 +1,13 @@
+:root {
+  --ink-950: #071512;
+  --ink-900: #0d1f1b;
+  --ink-800: #132a24;
+  --line: #244a3f;
+  --text: #eef8f4;
+  --muted: #91aaa1;
+  --mint: #70e0ba;
+  --amber: #f0bf68;
+  --danger: #e86f6f;
+  --radius-card: 18px;
+  color-scheme: dark;
+}
