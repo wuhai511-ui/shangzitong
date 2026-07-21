@@ -1,0 +1,18 @@
+﻿[Unit]
+Description=Shangzitong FastAPI backend
+After=network.target
+
+[Service]
+Type=simple
+User=admin
+Group=admin
+WorkingDirectory=/home/admin/szt/backend
+EnvironmentFile=/home/admin/szt-shared/szt.env
+ExecStart=/home/admin/szt/backend/.venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8800
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
