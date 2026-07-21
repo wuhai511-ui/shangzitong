@@ -43,3 +43,22 @@ def test_rollback_requires_recorded_state():
     assert "PREVIOUS_COMMIT" in script
     assert "PREVIOUS_H5_TARGET" in script
     assert "DATABASE_BACKUP" in script
+
+
+def test_deploy_records_resolved_symlink_target_not_itself():
+    script = (ROOT / "ops/scripts/deploy.sh").read_text(encoding="utf-8")
+    # Plain readlink yields the immediate link target (the release directory),
+    # never the symlink path itself.
+    assert 'readlink "$H5_CURRENT"' in script
+    assert "readlink -f" not in script
+    # A self-referential or non-directory target must be cleared before recording.
+    assert '"$H5_CURRENT") PREVIOUS_H5_TARGET=""' in script
+    assert '[ -d "$PREVIOUS_H5_TARGET" ]' in script
+
+
+def test_rollback_rejects_self_referential_or_missing_target():
+    script = (ROOT / "ops/scripts/rollback.sh").read_text(encoding="utf-8")
+    assert 'PREVIOUS_H5_TARGET is the symlink itself' in script
+    assert 'PREVIOUS_H5_TARGET is not an existing directory' in script
+    assert '[ "$PREVIOUS_H5_TARGET" != "$H5_CURRENT" ]' in script
+    assert '[ -d "$PREVIOUS_H5_TARGET" ]' in script

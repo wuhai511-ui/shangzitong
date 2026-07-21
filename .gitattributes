@@ -1,0 +1,5 @@
+# Shell and service scripts must keep LF line endings on every platform.
+*.sh text eol=lf
+ops/scripts/* text eol=lf
+ops/systemd/* text eol=lf
+ops/nginx/* text eol=lf

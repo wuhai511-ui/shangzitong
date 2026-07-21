@@ -33,6 +33,10 @@ under_allowed() {
 
 [ -n "${PREVIOUS_COMMIT:-}" ] || fail "PREVIOUS_COMMIT missing in state file"
 [ -n "${PREVIOUS_H5_TARGET:-}" ] || fail "PREVIOUS_H5_TARGET missing in state file"
+  # Reject a self-referential or missing target so rollback never creates
+  # a symlink that points at itself.
+  [ "$PREVIOUS_H5_TARGET" != "$H5_CURRENT" ] || fail "PREVIOUS_H5_TARGET is the symlink itself"
+  [ -d "$PREVIOUS_H5_TARGET" ] || fail "PREVIOUS_H5_TARGET is not an existing directory"
 [ -n "${DATABASE_BACKUP:-}" ] || fail "DATABASE_BACKUP missing in state file"
 under_allowed "$PREVIOUS_H5_TARGET" || fail "PREVIOUS_H5_TARGET outside $ALLOWED_ROOT"
 under_allowed "$DATABASE_BACKUP" || fail "DATABASE_BACKUP outside $ALLOWED_ROOT"

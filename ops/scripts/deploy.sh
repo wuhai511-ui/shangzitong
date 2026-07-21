@@ -40,7 +40,13 @@ git merge-base --is-ancestor "$TARGET_COMMIT" origin/main \
 
 # 4. Record current commit and current H5 symlink target.
 PREVIOUS_COMMIT="$(git rev-parse HEAD)"
-PREVIOUS_H5_TARGET="$(readlink -f "$H5_CURRENT" 2>/dev/null || true)"
+PREVIOUS_H5_TARGET="$(readlink "$H5_CURRENT" 2>/dev/null || true)"
+  # Guard: never record the symlink itself or a non-directory target,
+  # otherwise rollback would create a self-referential symlink.
+  case "$PREVIOUS_H5_TARGET" in
+    ""|"$H5_CURRENT") PREVIOUS_H5_TARGET="" ;;
+    *) [ -d "$PREVIOUS_H5_TARGET" ] || PREVIOUS_H5_TARGET="" ;;
+  esac
 
 # Source the env file for DB_PATH.
 set -a
