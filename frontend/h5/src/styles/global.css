@@ -398,3 +398,29 @@ a {
   color: var(--muted);
   font-size: 12px;
 }
+
+
+.muted {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.danger {
+  color: var(--danger);
+}
+
+.stoploss-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.stoploss-grid h4 {
+  margin: 0 0 4px;
+  font-size: 15px;
+}
+
+.caution {
+  margin-top: 8px;
+  opacity: 0.7;
+}

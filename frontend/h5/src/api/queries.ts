@@ -130,7 +130,7 @@ export function useConfirmUploadMutation() {
 
 export function useRecommendQuery(amount: number, purchaseDate: string) {
   return useQuery<RecommendResponse>({
-    queryKey: queryKeys.recommendations,
+    queryKey: ["recommendations", amount, purchaseDate],
     queryFn: () =>
       apiClient<RecommendResponse>("/api/v1/recommend", {
         method: "POST",
