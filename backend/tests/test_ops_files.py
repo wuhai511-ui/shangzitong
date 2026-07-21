@@ -35,3 +35,11 @@ def test_deploy_script_has_required_guards():
         "rollback.sh",
     ]:
         assert text in script
+
+
+def test_rollback_requires_recorded_state():
+    script = (ROOT / "ops/scripts/rollback.sh").read_text(encoding="utf-8")
+    assert 'source "$STATE_FILE"' in script
+    assert "PREVIOUS_COMMIT" in script
+    assert "PREVIOUS_H5_TARGET" in script
+    assert "DATABASE_BACKUP" in script
