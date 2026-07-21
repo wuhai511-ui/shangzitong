@@ -166,3 +166,105 @@ a {
     transform: rotate(360deg);
   }
 }
+
+
+.page h2 {
+  margin: 0 0 12px;
+  font-size: 22px;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.metric-label {
+  display: block;
+  color: var(--muted);
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.metric-value {
+  display: block;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.metric-value.danger {
+  color: var(--danger);
+}
+
+.estimate-banner {
+  background: rgba(240, 191, 104, 0.12);
+  border: 1px solid var(--amber);
+  border-radius: var(--radius-card);
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  color: var(--amber);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.estimate-hint {
+  font-size: 13px;
+  opacity: 0.8;
+}
+
+.chart-card {
+  margin-bottom: 12px;
+}
+
+.cash-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.cash-form input {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--ink-800);
+  color: var(--text);
+  font-size: 16px;
+}
+
+.cash-form input:focus-visible {
+  outline: none;
+  border-color: var(--mint);
+}
+
+.cash-form button {
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--mint);
+  background: var(--mint);
+  color: var(--ink-950);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cash-form button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.form-error {
+  color: var(--danger);
+  font-size: 13px;
+}
+
+.onboarding-card h3 {
+  margin: 0 0 8px;
+}
+
+.onboarding-card ul {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--muted);
+}
