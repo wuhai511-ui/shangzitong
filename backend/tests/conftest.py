@@ -18,6 +18,9 @@ from models.merchant_profile import MerchantProfile  # noqa
 from models.manual_settlement import ManualSettlement  # noqa
 from models.agency import Agency  # noqa
 from models.agency_payment_channel import AgencyPaymentChannel  # noqa
+from models.transaction import Transaction  # noqa
+from models.auto_swipe_policy import AutoSwipePolicy  # noqa
+from models.auto_swipe_execution_log import AutoSwipeExecutionLog  # noqa
 
 
 @pytest.fixture(scope="session", autouse=True)
