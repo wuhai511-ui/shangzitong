@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from models.transaction import Transaction
 from core.auth_context import UserContext
 from fastapi import HTTPException
+from services.execution_log_service import ExecutionLogService
 
 VALID_STATUSES = {"pending", "scheduled", "executing", "success", "failed", "dead_letter", "cancelled"}
 
@@ -94,11 +95,15 @@ class TransactionService:
 
     @staticmethod
     def mark_success(db: Session, txn_id: int, provider_txn_id: str, result_data: dict) -> Transaction:
-        return TransactionService.transition(db, txn_id, "success", provider_txn_id=provider_txn_id, result_data=result_data)
+        txn = TransactionService.transition(db, txn_id, "success", provider_txn_id=provider_txn_id, result_data=result_data)
+        ExecutionLogService.log(db, transaction_id=txn_id, agency_id=txn.agency_id, event_type="success", event_data=result_data)
+        return txn
 
     @staticmethod
     def mark_failed(db: Session, txn_id: int, error: str) -> Transaction:
-        return TransactionService.transition(db, txn_id, "failed", error=error)
+        txn = TransactionService.transition(db, txn_id, "failed", error=error)
+        ExecutionLogService.log(db, transaction_id=txn_id, agency_id=txn.agency_id, event_type="failed", event_data={"error": error}, severity="error")
+        return txn
 
     @staticmethod
     def mark_dead_letter(db: Session, txn_id: int) -> Transaction:
@@ -106,7 +111,23 @@ class TransactionService:
 
     @staticmethod
     def cancel(db: Session, txn_id: int) -> Transaction:
-        return TransactionService.transition(db, txn_id, "cancelled")
+        txn = TransactionService.transition(db, txn_id, "cancelled")
+        ExecutionLogService.log(db, transaction_id=txn_id, agency_id=txn.agency_id, event_type="cancelled")
+        return txn
+
+    @staticmethod
+    def retry(db: Session, txn_id: int) -> Transaction:
+        txn = db.query(Transaction).filter(Transaction.id == txn_id).first()
+        if not txn:
+            raise HTTPException(404, "Transaction not found")
+        if txn.status not in ("failed", "dead_letter"):
+            raise HTTPException(400, f"Cannot retry transaction in '{txn.status}' status")
+        txn.status = "scheduled"
+        txn.last_error = None
+        db.commit()
+        db.refresh(txn)
+        ExecutionLogService.log(db, transaction_id=txn_id, agency_id=txn.agency_id, event_type="retry_scheduled")
+        return txn
 
     @staticmethod
     def list_by_agency(

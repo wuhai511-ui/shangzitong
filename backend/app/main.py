@@ -68,6 +68,7 @@ from api.manual_settlement import router as manual_settlement_router
 from api.merchants import router as merchants_router
 from api.policies import router as policies_router
 from api.trigger_auto_swipe import router as trigger_auto_swipe_router
+from api.transactions import router as transactions_router
 
 if settings.ENABLE_SFTP_INGEST:
     from api.sftp import router as sftp_router
@@ -101,6 +102,7 @@ app.include_router(manual_settlement_router)
 app.include_router(merchants_router)
 app.include_router(policies_router)
 app.include_router(trigger_auto_swipe_router)
+app.include_router(transactions_router)
 
 
 @app.get("/health")

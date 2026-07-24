@@ -1,11 +1,11 @@
-from sqlalchemy import Column, BigInteger, String, Text, DateTime, ForeignKey, func
+from sqlalchemy import Column, BigInteger, Integer, String, Text, DateTime, ForeignKey, func
 from .base import Base
 
 
 class AutoSwipeExecutionLog(Base):
     __tablename__ = "auto_swipe_execution_logs"
 
-    id = Column(BigInteger, primary_key=True, autoincrement=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     transaction_id = Column(BigInteger, ForeignKey("transactions.id"), nullable=True)
     agency_id = Column(BigInteger, nullable=False)
     event_type = Column(String(32), nullable=False)
