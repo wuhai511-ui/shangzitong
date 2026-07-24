@@ -10,14 +10,20 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 # Import all models so they register with Base.metadata before startup.
-import models.user         # noqa: F401
-import models.card         # noqa: F401
-import models.datasource   # noqa: F401
-import models.sftp_config  # noqa: F401
-import models.email_config # noqa: F401
-import models.bank         # noqa: F401
-import models.merchant_profile  # noqa: F401
-import models.manual_settlement  # noqa: F401
+import models.user                # noqa: F401
+import models.card                # noqa: F401
+import models.datasource          # noqa: F401
+import models.sftp_config         # noqa: F401
+import models.email_config        # noqa: F401
+import models.bank                # noqa: F401
+import models.merchant_profile    # noqa: F401
+import models.manual_settlement   # noqa: F401
+import models.agency              # noqa: F401
+import models.agency_payment_channel  # noqa: F401
+import models.merchant            # noqa: F401
+import models.merchant_onboarding # noqa: F401
+import models.onboarding_invite   # noqa: F401
+import models.onboarding_session  # noqa: F401
 
 from core.bootstrap import initialize_database
 from core.config import settings

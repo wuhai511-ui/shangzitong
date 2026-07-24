@@ -7,6 +7,7 @@ class EmailConfig(BaseModel):
     __tablename__ = "email_configs"
 
     user_id = Column(BigInteger, ForeignKey("users.id"), nullable=False, index=True)
+    agency_id = Column(BigInteger, nullable=True)
     email = Column(String(255), nullable=False)
     imap_host = Column(String(255), nullable=False)
     imap_port = Column(Integer, default=993, nullable=False)

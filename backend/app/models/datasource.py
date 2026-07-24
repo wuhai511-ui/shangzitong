@@ -8,6 +8,7 @@ class DataSource(BaseModel):
     __tablename__ = "data_sources"
 
     user_id = Column(BigInteger, ForeignKey("users.id"), nullable=False, index=True)
+    agency_id = Column(BigInteger, nullable=True)
     source_type = Column(String(16), nullable=False)  # oauth / sftp / email / upload
     provider = Column(String(64), nullable=True)
     label = Column(String(128), nullable=True)
@@ -19,6 +20,7 @@ class Settlement(BaseModel):
 
     source_id = Column(BigInteger, ForeignKey("data_sources.id"), nullable=False, index=True)
     user_id = Column(BigInteger, ForeignKey("users.id"), nullable=False, index=True)
+    agency_id = Column(BigInteger, nullable=True)
     settle_date = Column(Date, nullable=False)
     amount = Column(Numeric(12, 2), nullable=False, default=Decimal("0"))
     provider = Column(String(64), nullable=True)

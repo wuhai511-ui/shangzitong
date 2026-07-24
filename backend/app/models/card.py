@@ -8,6 +8,7 @@ class Card(BaseModel):
     __tablename__ = "cards"
 
     user_id = Column(BigInteger, ForeignKey("users.id"), nullable=False, index=True)
+    agency_id = Column(BigInteger, nullable=True)
     bank_name = Column(String(32), nullable=False)
     card_tail = Column(String(4), nullable=True)
     credit_limit = Column(Numeric(12, 2), nullable=False)
