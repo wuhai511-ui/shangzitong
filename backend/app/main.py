@@ -24,6 +24,8 @@ import models.merchant            # noqa: F401
 import models.merchant_onboarding # noqa: F401
 import models.onboarding_invite   # noqa: F401
 import models.onboarding_session  # noqa: F401
+import models.auto_swipe_policy   # noqa: F401
+import models.auto_swipe_execution_log  # noqa: F401
 
 from core.bootstrap import initialize_database
 from core.config import settings
@@ -64,6 +66,7 @@ from api.cashflow import router as cashflow_router
 from api.channels import router as channels_router
 from api.manual_settlement import router as manual_settlement_router
 from api.merchants import router as merchants_router
+from api.policies import router as policies_router
 
 if settings.ENABLE_SFTP_INGEST:
     from api.sftp import router as sftp_router
@@ -95,6 +98,7 @@ app.include_router(cashflow_router)
 app.include_router(channels_router)
 app.include_router(manual_settlement_router)
 app.include_router(merchants_router)
+app.include_router(policies_router)
 
 
 @app.get("/health")
