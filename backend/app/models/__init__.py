@@ -12,3 +12,6 @@ from .merchant import Merchant
 from .merchant_onboarding import MerchantOnboardingApplication
 from .onboarding_invite import OnboardingInvite
 from .onboarding_session import OnboardingSession
+from .transaction import Transaction
+from .auto_swipe_policy import AutoSwipePolicy
+from .auto_swipe_execution_log import AutoSwipeExecutionLog

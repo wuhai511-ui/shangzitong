@@ -27,6 +27,9 @@ import models.merchant  # noqa: E402, F401
 import models.merchant_onboarding  # noqa: E402, F401
 import models.onboarding_invite  # noqa: E402, F401
 import models.onboarding_session  # noqa: E402, F401
+import models.transaction  # noqa: E402, F401
+import models.auto_swipe_policy  # noqa: E402, F401
+import models.auto_swipe_execution_log  # noqa: E402, F401
 
 config = context.config
 target_metadata = Base.metadata
