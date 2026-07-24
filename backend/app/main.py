@@ -59,6 +59,7 @@ from api.stoploss import router as stoploss_router
 from api.report import router as report_router
 from api.banks import router as banks_router
 from api.profile import router as profile_router
+from api.agencies import router as agencies_router
 from api.cashflow import router as cashflow_router
 from api.manual_settlement import router as manual_settlement_router
 
@@ -83,6 +84,7 @@ if settings.ENABLE_EMAIL_INGEST:
 app.include_router(report_router)
 app.include_router(banks_router)
 app.include_router(profile_router)
+app.include_router(agencies_router)
 app.include_router(cashflow_router)
 app.include_router(manual_settlement_router)
 
