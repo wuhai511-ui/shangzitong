@@ -19,6 +19,8 @@ class Settings(BaseSettings):
     UPLOAD_MAX_CELLS: int = 1_000_000
     MAX_UPLOAD_BYTES: int = 10 * 1024 * 1024
     UPLOAD_PREVIEW_TTL_SECONDS: int = 900
+    PAYMENT_CREDENTIAL_KEY: str = ""
+    ENABLE_ONBOARDING: bool = False
     H5_COOKIE_NAME: str = "szt_session"
     H5_TRUSTED_HEADER: str = "X-Authenticated-User"
     H5_ALLOWED_ORIGINS: str = "https://47.253.226.91"
