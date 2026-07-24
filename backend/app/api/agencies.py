@@ -15,7 +15,7 @@ def me(
 ):
     if ctx.role not in ("super_admin", "agent_admin"):
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Agency not found")
-        if ctx.agency_id is None:
+    if ctx.agency_id is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "No agency assigned")
     return AgencyService.get_by_id(db, ctx, ctx.agency_id)
 

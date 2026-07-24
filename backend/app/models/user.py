@@ -9,7 +9,7 @@ class User(BaseModel):
     openid = Column(String(128), unique=True, nullable=False, index=True)
     nickname = Column(String(64), nullable=False, default="")
     phone = Column(String(256), nullable=False, default="")
-    agency_id = Column(BigInteger, nullable=True)
+    agency_id = Column(BigInteger, nullable=True, index=True)
     role = Column(String(20), default="merchant")
     auth_method = Column(String(20), default="basic_auth_proxy")
     password_hash = Column(String(128), nullable=True)
