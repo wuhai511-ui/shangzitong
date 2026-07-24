@@ -69,6 +69,8 @@ if settings.ENABLE_SFTP_INGEST:
     from api.sftp import router as sftp_router
 if settings.ENABLE_EMAIL_INGEST:
     from api.email_ingest import router as email_ingest_router
+if settings.ENABLE_ONBOARDING:
+    from api.onboarding import router as onboarding_router
 
 app.include_router(auth_router)
 app.include_router(cards_router)
@@ -83,6 +85,8 @@ if settings.ENABLE_SFTP_INGEST:
     app.include_router(sftp_router)
 if settings.ENABLE_EMAIL_INGEST:
     app.include_router(email_ingest_router)
+if settings.ENABLE_ONBOARDING:
+    app.include_router(onboarding_router)
 app.include_router(report_router)
 app.include_router(banks_router)
 app.include_router(profile_router)
