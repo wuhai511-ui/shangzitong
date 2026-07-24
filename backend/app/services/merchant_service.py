@@ -45,13 +45,12 @@ class MerchantService:
         return merchant
 
     @staticmethod
-    def list_by_agency(db: Session, ctx: UserContext, agency_id: int) -> list[Merchant]:
+    def list_by_agency(db: Session, ctx: UserContext) -> list[Merchant]:
         if ctx.role not in ("super_admin", "agent_admin"):
             raise HTTPException(403, "Permission denied")
-        if ctx.role == "agent_admin" and ctx.agency_id != agency_id:
-            raise HTTPException(403, "Permission denied")
+        target_agency_id = ctx.agency_id
         return db.query(Merchant).filter(
-            Merchant.agency_id == agency_id,
+            Merchant.agency_id == target_agency_id,
             Merchant.deleted_at.is_(None),
         ).all()
 

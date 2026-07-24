@@ -26,11 +26,10 @@ def create_merchant(
 
 @router.get("", response_model=list[MerchantResponse])
 def list_merchants(
-    agency_id: int,
     ctx: UserContext = Depends(get_user_context),
     db: Session = Depends(get_db),
 ):
-    merchants = MerchantService.list_by_agency(db, ctx, agency_id)
+    merchants = MerchantService.list_by_agency(db, ctx)
     return [_to_response(m) for m in merchants]
 
 

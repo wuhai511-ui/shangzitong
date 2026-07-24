@@ -21,11 +21,10 @@ def create_channel(
 
 @router.get("", response_model=list[ChannelResponse])
 def list_channels(
-    agency_id: int,
     ctx: UserContext = Depends(get_user_context),
     db: Session = Depends(get_db),
 ):
-    channels = ChannelService.list_by_agency(db, ctx, agency_id)
+    channels = ChannelService.list_by_agency(db, ctx)
     return [_to_response(c) for c in channels]
 
 
