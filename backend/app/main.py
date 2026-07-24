@@ -63,6 +63,7 @@ from api.agencies import router as agencies_router
 from api.cashflow import router as cashflow_router
 from api.channels import router as channels_router
 from api.manual_settlement import router as manual_settlement_router
+from api.merchants import router as merchants_router
 
 if settings.ENABLE_SFTP_INGEST:
     from api.sftp import router as sftp_router
@@ -89,6 +90,7 @@ app.include_router(agencies_router)
 app.include_router(cashflow_router)
 app.include_router(channels_router)
 app.include_router(manual_settlement_router)
+app.include_router(merchants_router)
 
 
 @app.get("/health")
