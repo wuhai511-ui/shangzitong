@@ -26,6 +26,8 @@ import models.onboarding_invite   # noqa: F401
 import models.onboarding_session  # noqa: F401
 import models.auto_swipe_policy   # noqa: F401
 import models.auto_swipe_execution_log  # noqa: F401
+import models.sensitive_data_audit  # noqa: F401
+import models.payment_webhook_event  # noqa: F401
 
 from core.bootstrap import initialize_database
 from core.config import settings
@@ -69,6 +71,7 @@ from api.merchants import router as merchants_router
 from api.policies import router as policies_router
 from api.trigger_auto_swipe import router as trigger_auto_swipe_router
 from api.transactions import router as transactions_router
+from api.webhooks import router as webhooks_router
 
 if settings.ENABLE_SFTP_INGEST:
     from api.sftp import router as sftp_router
@@ -103,6 +106,7 @@ app.include_router(merchants_router)
 app.include_router(policies_router)
 app.include_router(trigger_auto_swipe_router)
 app.include_router(transactions_router)
+app.include_router(webhooks_router)
 
 
 @app.get("/health")

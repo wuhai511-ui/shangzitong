@@ -1,0 +1,18 @@
+[Unit]
+Description=Shangzitong Celery worker
+After=network.target
+
+[Service]
+Type=simple
+User=admin
+Group=admin
+WorkingDirectory=/home/admin/szt/backend
+EnvironmentFile=/home/admin/szt-shared/szt.env
+ExecStart=/home/admin/szt/backend/.venv/bin/celery -A app.tasks.auto_swipe_tasks worker --loglevel=info
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

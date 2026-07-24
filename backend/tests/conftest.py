@@ -21,6 +21,8 @@ from models.agency_payment_channel import AgencyPaymentChannel  # noqa
 from models.transaction import Transaction  # noqa
 from models.auto_swipe_policy import AutoSwipePolicy  # noqa
 from models.auto_swipe_execution_log import AutoSwipeExecutionLog  # noqa
+from models.sensitive_data_audit import SensitiveDataAudit  # noqa
+from models.payment_webhook_event import PaymentWebhookEvent  # noqa
 
 
 @pytest.fixture(scope="session", autouse=True)

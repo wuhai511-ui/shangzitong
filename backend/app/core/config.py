@@ -24,6 +24,8 @@ class Settings(BaseSettings):
     H5_COOKIE_NAME: str = "szt_session"
     H5_TRUSTED_HEADER: str = "X-Authenticated-User"
     H5_ALLOWED_ORIGINS: str = "https://47.253.226.91"
+    CELERY_BROKER_URL: str = "redis://localhost:6379/0"
+    CELERY_RESULT_BACKEND: str = "redis://localhost:6379/0"
 
     def validate_production(self):
         if self.ENV == "prod":

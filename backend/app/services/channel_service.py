@@ -6,6 +6,7 @@ from models.agency_payment_channel import AgencyPaymentChannel
 from schemas.channel import ChannelCreate
 from core.auth_context import UserContext
 from core.crypto import encrypt_field, mask_value
+from services.sensitive_data_audit import SensitiveDataAuditService
 
 
 class ChannelService:
@@ -26,6 +27,7 @@ class ChannelService:
         db.add(channel)
         db.commit()
         db.refresh(channel)
+        SensitiveDataAuditService.log(db, actor_user_id=ctx.user_id, action="decrypt", resource_type="channel", resource_id=channel.id, agency_id=channel.agency_id)
         return channel
 
     @staticmethod

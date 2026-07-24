@@ -12,6 +12,7 @@ from models.merchant_onboarding import MerchantOnboardingApplication, Onboarding
 from models.agency import Agency
 from models.agency_payment_channel import AgencyPaymentChannel
 from core.auth_context import UserContext
+from services.sensitive_data_audit import SensitiveDataAuditService
 
 
 class OnboardingService:
@@ -186,6 +187,8 @@ class OnboardingService:
 
         db.commit()
         db.refresh(application)
+
+        SensitiveDataAuditService.log(db, actor_user_id=0, action="view", resource_type="onboarding", resource_id=application.id, agency_id=invite.agency_id)
 
         return {
             "application_id": application.id,

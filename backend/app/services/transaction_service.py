@@ -9,6 +9,7 @@ from models.transaction import Transaction
 from core.auth_context import UserContext
 from fastapi import HTTPException
 from services.execution_log_service import ExecutionLogService
+from services.sensitive_data_audit import SensitiveDataAuditService
 
 VALID_STATUSES = {"pending", "scheduled", "executing", "success", "failed", "dead_letter", "cancelled"}
 
@@ -94,15 +95,17 @@ class TransactionService:
         return TransactionService.transition(db, txn_id, "executing")
 
     @staticmethod
-    def mark_success(db: Session, txn_id: int, provider_txn_id: str, result_data: dict) -> Transaction:
+    def mark_success(db: Session, txn_id: int, provider_txn_id: str, result_data: dict, *, actor_user_id: int = 0) -> Transaction:
         txn = TransactionService.transition(db, txn_id, "success", provider_txn_id=provider_txn_id, result_data=result_data)
         ExecutionLogService.log(db, transaction_id=txn_id, agency_id=txn.agency_id, event_type="success", event_data=result_data)
+        SensitiveDataAuditService.log(db, actor_user_id=actor_user_id, action="gateway_call", resource_type="transaction", resource_id=txn_id, agency_id=txn.agency_id)
         return txn
 
     @staticmethod
-    def mark_failed(db: Session, txn_id: int, error: str) -> Transaction:
+    def mark_failed(db: Session, txn_id: int, error: str, *, actor_user_id: int = 0) -> Transaction:
         txn = TransactionService.transition(db, txn_id, "failed", error=error)
         ExecutionLogService.log(db, transaction_id=txn_id, agency_id=txn.agency_id, event_type="failed", event_data={"error": error}, severity="error")
+        SensitiveDataAuditService.log(db, actor_user_id=actor_user_id, action="gateway_call", resource_type="transaction", resource_id=txn_id, agency_id=txn.agency_id)
         return txn
 
     @staticmethod
@@ -110,9 +113,10 @@ class TransactionService:
         return TransactionService.transition(db, txn_id, "dead_letter")
 
     @staticmethod
-    def cancel(db: Session, txn_id: int) -> Transaction:
+    def cancel(db: Session, txn_id: int, *, actor_user_id: int = 0) -> Transaction:
         txn = TransactionService.transition(db, txn_id, "cancelled")
         ExecutionLogService.log(db, transaction_id=txn_id, agency_id=txn.agency_id, event_type="cancelled")
+        SensitiveDataAuditService.log(db, actor_user_id=actor_user_id, action="gateway_call", resource_type="transaction", resource_id=txn_id, agency_id=txn.agency_id)
         return txn
 
     @staticmethod
